@@ -91,3 +91,101 @@ export const getFileSize = (bytes: number): string => {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
+
+// Additional utility functions
+export const generateRandomString = (length: number = 8): string => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+};
+
+export const formatRelativeTime = (date: Date | string): string => {
+  const now = dayjs();
+  const target = dayjs(date);
+  const diff = now.diff(target, 'minute');
+  
+  if (diff < 1) return 'Just now';
+  if (diff < 60) return `${diff} minutes ago`;
+  
+  const hours = Math.floor(diff / 60);
+  if (hours < 24) return `${hours} hours ago`;
+  
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days} days ago`;
+  
+  const weeks = Math.floor(days / 7);
+  if (weeks < 4) return `${weeks} weeks ago`;
+  
+  const months = Math.floor(days / 30);
+  if (months < 12) return `${months} months ago`;
+  
+  const years = Math.floor(days / 365);
+  return `${years} years ago`;
+};
+
+export const truncateText = (text: string, maxLength: number): string => {
+  if (text.length <= maxLength) return text;
+  return text.substring(0, maxLength) + '...';
+};
+
+export const capitalizeFirst = (str: string): string => {
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+};
+
+export const formatNumber = (num: number): string => {
+  if (num >= 1000000) {
+    return (num / 1000000).toFixed(1) + 'M';
+  }
+  if (num >= 1000) {
+    return (num / 1000).toFixed(1) + 'K';
+  }
+  return num.toString();
+};
+
+export const sleep = (ms: number): Promise<void> => {
+  return new Promise(resolve => setTimeout(resolve, ms));
+};
+
+export const retry = async <T>(
+  fn: () => Promise<T>,
+  maxAttempts: number = 3,
+  delay: number = 1000
+): Promise<T> => {
+  let lastError: Error;
+  
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error as Error;
+      if (attempt === maxAttempts) break;
+      await sleep(delay * attempt);
+    }
+  }
+  
+  throw lastError!;
+};
+
+export const isMobile = (): boolean => {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+};
+
+export const isOnline = (): boolean => {
+  return navigator.onLine;
+};
+
+export const downloadFile = (url: string, filename: string): void => {
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
+export const cn = (...classes: (string | undefined | null | false)[]): string => {
+  return classes.filter(Boolean).join(' ');
+};
