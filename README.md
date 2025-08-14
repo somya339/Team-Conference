@@ -116,5 +116,18 @@ For inquiries or support, reach out to [@ore-codes](https://github.com/ore-codes
 
 ---
 
+## Development Notes
+
+### Architecture Decisions
+- Using monorepo structure with Turbo for better code sharing
+- LiveKit for real-time video/audio communication
+- Prisma for type-safe database operations
+- Storybook for component development and testing
+
+### Performance Optimizations
+- Lazy loading for meeting components
+- IndexedDB for local storage
+- RxJS for reactive state management
+
 Enjoy building with **Stellar**! 🚀
 
