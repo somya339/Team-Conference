@@ -1,21 +1,100 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { AccessToken } from 'livekit-server-sdk';
-import { randomBytes } from 'crypto';
-import { ConfigService } from '@nestjs/config';
+import { LiveKitService } from '../livekit/livekit.service';
+import { CreateMeetingDto } from './dto/create-meeting.dto';
+import { JoinMeetingDto } from './dto/join-meeting.dto';
 
 @Injectable()
 export class MeetingService {
   constructor(
     private prisma: PrismaService,
-    private config: ConfigService,
+    private livekitService: LiveKitService,
   ) {}
 
-  async getMeetingByCode(code: string) {
-    const meeting = await this.prisma.meeting.findUnique({
-      where: { code },
+  async createMeeting(createMeetingDto: CreateMeetingDto, userId: number) {
+    const { title, description, startTime, endTime, maxParticipants } = createMeetingDto;
+
+    // Validate meeting time
+    if (startTime && endTime && new Date(startTime) >= new Date(endTime)) {
+      throw new BadRequestException('End time must be after start time');
+    }
+
+    // Create meeting in database
+    const meeting = await this.prisma.meeting.create({
+      data: {
+        title,
+        description,
+        startTime: startTime ? new Date(startTime) : null,
+        endTime: endTime ? new Date(endTime) : null,
+        maxParticipants: maxParticipants || 50,
+        createdBy: userId,
+        status: 'scheduled',
+      },
       include: {
-        participants: { include: { user: { select: { username: true } } } },
+        creator: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    // Create LiveKit room
+    const roomName = `meeting_${meeting.id}`;
+    const room = await this.livekitService.createRoom(roomName, {
+      maxParticipants: meeting.maxParticipants,
+      emptyTimeout: 10 * 60, // 10 minutes
+      maxPublishers: 10,
+    });
+
+    // Update meeting with room information
+    const updatedMeeting = await this.prisma.meeting.update({
+      where: { id: meeting.id },
+      data: {
+        roomName: room.name,
+        roomUrl: room.url,
+      },
+      include: {
+        creator: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    return updatedMeeting;
+  }
+
+  async joinMeeting(joinMeetingDto: JoinMeetingDto, userId: number) {
+    const { meetingId } = joinMeetingDto;
+
+    // Find meeting
+    const meeting = await this.prisma.meeting.findUnique({
+      where: { id: meetingId },
+      include: {
+        creator: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        participants: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -23,154 +102,169 @@ export class MeetingService {
       throw new NotFoundException('Meeting not found');
     }
 
-    return { meeting };
-  }
+    // Check if meeting is active
+    if (meeting.status === 'ended') {
+      throw new BadRequestException('Meeting has ended');
+    }
 
-  async createMeeting(
-    userId: string,
-    data: { title: string; description?: string },
-  ) {
-    const meetingCode = await this.generateUniqueCode();
+    // Check participant limit
+    if (meeting.participants.length >= meeting.maxParticipants) {
+      throw new BadRequestException('Meeting is full');
+    }
 
-    return this.prisma.meeting.create({
-      data: {
-        ...data,
-        userId,
-        code: meetingCode,
-        durationInSecs: 0,
-      },
-    });
-  }
-
-  async joinMeeting(userId: string, code: string) {
-    const meeting = await this.prisma.meeting.findUnique({
-      where: { code },
-      include: { participants: true },
-    });
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
-
-    if (!meeting) throw new NotFoundException('Meeting not found');
-
-    const liveKitToken = new AccessToken(
-      this.config.get<string>('liveKit.apiKey'),
-      this.config.get<string>('liveKit.secret'),
-      { identity: userId, name: user.username },
-    );
-    liveKitToken.addGrant({
-      room: meeting.id,
-      roomJoin: true,
-      roomCreate: true,
-    });
-    const token = await liveKitToken.toJwt();
-
-    const participant = await this.prisma.meetingParticipant.upsert({
-      where: { userId_meetingId: { userId, meetingId: meeting.id } },
-      update: {
-        joinTime: new Date(),
-        isActive: true,
-      },
-      create: {
-        userId,
-        meetingId: meeting.id,
-        joinTime: new Date(),
-        durationInSecs: 0,
-        isActive: true,
-      },
-    });
-
-    if (meeting.startTime === null && meeting.participants.length === 0) {
-      await this.prisma.meeting.update({
-        where: { id: meeting.id },
-        data: { startTime: new Date() },
+    // Add participant if not already in meeting
+    let participant = meeting.participants.find(p => p.userId === userId);
+    if (!participant) {
+      participant = await this.prisma.meetingParticipant.create({
+        data: {
+          meetingId: meeting.id,
+          userId,
+          joinedAt: new Date(),
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
       });
     }
 
-    const meetingWithParticipants = await this.prisma.meeting.findUnique({
-      where: { id: meeting.id },
-      include: {
-        participants: { include: { user: { select: { username: true } } } },
-      },
-    });
+    // Generate access token for LiveKit
+    const token = await this.livekitService.generateToken(meeting.roomName, userId.toString());
 
-    return { participant, token, meeting: meetingWithParticipants };
+    return {
+      meeting,
+      participant,
+      token,
+      roomUrl: meeting.roomUrl,
+    };
   }
 
-  async leaveMeeting(userId: string, code: string) {
+  async getMeeting(meetingId: number, userId: number) {
     const meeting = await this.prisma.meeting.findUnique({
-      where: { code },
-      include: { participants: true },
-    });
-
-    if (!meeting) throw new NotFoundException('Meeting not found');
-
-    const participant = await this.prisma.meetingParticipant.findUnique({
-      where: { userId_meetingId: { userId, meetingId: meeting.id } },
-    });
-
-    if (!participant) throw new NotFoundException('Participant not found');
-
-    const currentTime = new Date();
-    const durationInSecs =
-      (currentTime.getTime() - participant.joinTime.getTime()) / 1000;
-
-    await this.prisma.meetingParticipant.update({
-      where: { id: participant.id },
-      data: {
-        durationInSecs: Math.floor(durationInSecs),
-        isActive: false,
-      },
-    });
-
-    const activeParticipants = await this.prisma.meetingParticipant.findMany({
-      where: { meetingId: meeting.id, isActive: true },
-    });
-
-    if (activeParticipants.length === 0 && meeting.startTime) {
-      const meetingDuration =
-        (currentTime.getTime() - meeting.startTime.getTime()) / 1000;
-
-      await this.prisma.meeting.update({
-        where: { id: meeting.id },
-        data: { durationInSecs: Math.floor(meetingDuration) },
-      });
-    }
-  }
-
-  async getCreatedMeetings(userId: string) {
-    return this.prisma.meeting.findMany({
-      where: { userId },
+      where: { id: meetingId },
       include: {
+        creator: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
         participants: {
           include: {
             user: {
               select: {
                 id: true,
-                username: true,
+                name: true,
                 email: true,
               },
             },
           },
         },
       },
-      orderBy: {
-        createdAt: 'desc',
-      },
     });
-  }
 
-  private async generateUniqueCode(): Promise<string> {
-    let uniqueCode: string;
-    let collision = true;
-
-    while (collision) {
-      uniqueCode = randomBytes(6).toString('hex').slice(0, 9);
-      const existingMeeting = await this.prisma.meeting.findUnique({
-        where: { code: uniqueCode },
-      });
-
-      if (!existingMeeting) collision = false;
+    if (!meeting) {
+      throw new NotFoundException('Meeting not found');
     }
 
-    return uniqueCode;
+    // Check if user is participant or creator
+    const isParticipant = meeting.participants.some(p => p.userId === userId);
+    const isCreator = meeting.createdBy === userId;
+
+    if (!isParticipant && !isCreator) {
+      throw new BadRequestException('You are not authorized to view this meeting');
+    }
+
+    return meeting;
+  }
+
+  async getUserMeetings(userId: number) {
+    const meetings = await this.prisma.meeting.findMany({
+      where: {
+        OR: [
+          { createdBy: userId },
+          { participants: { some: { userId } } },
+        ],
+      },
+      include: {
+        creator: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        participants: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return meetings;
+  }
+
+  async endMeeting(meetingId: number, userId: number) {
+    const meeting = await this.prisma.meeting.findUnique({
+      where: { id: meetingId },
+    });
+
+    if (!meeting) {
+      throw new NotFoundException('Meeting not found');
+    }
+
+    if (meeting.createdBy !== userId) {
+      throw new BadRequestException('Only the meeting creator can end the meeting');
+    }
+
+    // Update meeting status
+    const updatedMeeting = await this.prisma.meeting.update({
+      where: { id: meetingId },
+      data: {
+        status: 'ended',
+        endedAt: new Date(),
+      },
+    });
+
+    // Close LiveKit room
+    await this.livekitService.deleteRoom(meeting.roomName);
+
+    return updatedMeeting;
+  }
+
+  async leaveMeeting(meetingId: number, userId: number) {
+    const participant = await this.prisma.meetingParticipant.findFirst({
+      where: {
+        meetingId,
+        userId,
+      },
+    });
+
+    if (!participant) {
+      throw new NotFoundException('You are not a participant of this meeting');
+    }
+
+    await this.prisma.meetingParticipant.update({
+      where: { id: participant.id },
+      data: {
+        leftAt: new Date(),
+      },
+    });
+
+    return { message: 'Successfully left the meeting' };
   }
 }
