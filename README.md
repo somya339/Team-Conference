@@ -35,7 +35,7 @@ Stellar is a high-performance video conferencing application built on [Livekit](
 ### Prerequisites
 Ensure you have the following installed:
 - **Node.js** (LTS recommended)
-- **npm** (preferred package manager)
+- **pnpm** (package manager)
 - **LiveKit local server** [Refer to docs](https://docs.livekit.io/home/self-hosting/local/)
 
 ### Local Setup
@@ -48,7 +48,7 @@ cd stellar-conferencing
 
 Install dependencies:
 ```sh
-npm install
+pnpm install
 ```
 
 ### Configure Environment Variables
@@ -70,7 +70,7 @@ VITE_LIVEKIT_URL=<your-livekit-ws-url>
 ### Start the Development Servers
 Run both frontend and backend in parallel:
 ```sh
-npm run dev
+pnpm dev
 ```
 
 The frontend should now be running at `http://localhost:5173/` and the backend will be running at `http://localhost:3000/`.
@@ -81,7 +81,7 @@ The frontend should now be running at `http://localhost:5173/` and the backend w
 
 ### Running Storybook Locally
 ```sh
-npm run storybook
+pnpm storybook
 ```
 Storybook will start on `http://localhost:6006/`.
 
@@ -90,11 +90,11 @@ Ensure you have a [Chromatic](https://www.chromatic.com/) account set up.
 
 1. Install Chromatic CLI if not already installed:
    ```sh
-   npm add chromatic --dev
+   pnpm add -D chromatic
    ```
 2. Run Chromatic deployment:
    ```sh
-   npm run chromatic --project-token=<your-chromatic-project-token>
+   pnpm chromatic --project-token=<your-chromatic-project-token>
    ```
 
 This will upload your Storybook to Chromatic for visual testing.

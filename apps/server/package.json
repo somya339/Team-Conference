@@ -87,5 +87,11 @@
   "compilerOptions": {
     "outDir": "./dist",
     "baseUrl": "./"
+  },
+  "pnpm": {
+    "overrides": {
+      "@nestjs/common": "^10.0.0",
+      "@nestjs/core": "^10.0.0"
+    }
   }
 }
