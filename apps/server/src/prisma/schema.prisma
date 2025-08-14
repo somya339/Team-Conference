@@ -1,0 +1,89 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lastLoginAt DateTime?
+
+  // Relations
+  createdMeetings Meeting[] @relation("MeetingCreator")
+  participants    MeetingParticipant[]
+  submissions     Submission[]
+
+  @@map("users")
+}
+
+model Meeting {
+  id              Int      @id @default(autoincrement())
+  title           String
+  description     String?
+  startTime       DateTime?
+  endTime         DateTime?
+  endedAt         DateTime?
+  maxParticipants Int      @default(50)
+  status          String   @default("scheduled") // scheduled, active, ended, cancelled
+  roomName        String?  @unique
+  roomUrl         String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  createdBy     Int
+  creator       User                 @relation("MeetingCreator", fields: [createdBy], references: [id])
+  participants  MeetingParticipant[]
+  submissions   Submission[]
+
+  @@map("meetings")
+}
+
+model MeetingParticipant {
+  id        Int      @id @default(autoincrement())
+  meetingId Int
+  userId    Int
+  joinedAt  DateTime @default(now())
+  leftAt    DateTime?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  meeting Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([meetingId, userId])
+  @@map("meeting_participants")
+}
+
+model Submission {
+  id          Int      @id @default(autoincrement())
+  meetingId   Int
+  userId      Int
+  title       String
+  description String?
+  fileUrl     String?
+  fileSize    Int?
+  fileType    String?
+  status      String   @default("pending") // pending, approved, rejected
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  meeting Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("submissions")
+}
