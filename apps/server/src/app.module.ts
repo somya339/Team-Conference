@@ -4,6 +4,7 @@ import { PrismaService } from './prisma/prisma.service';
 import { ConfigModule } from '@nestjs/config';
 import { MeetingModule } from './meeting/meeting.module';
 import { SubmissionModule } from './submission/submission.module';
+import { LiveKitModule } from './livekit/livekit.module';
 import configuration from './config/configuration';
 
 @Module({
@@ -15,6 +16,7 @@ import configuration from './config/configuration';
     }),
     MeetingModule,
     SubmissionModule,
+    LiveKitModule,
   ],
   providers: [PrismaService],
 })

@@ -96,7 +96,7 @@ export class AuthService {
     };
   }
 
-  async validateUser(userId: number) {
+  async validateUser(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -115,7 +115,7 @@ export class AuthService {
     return user;
   }
 
-  async refreshToken(userId: number) {
+  async refreshToken(userId: string) {
     const user = await this.validateUser(userId);
     
     const payload = { sub: user.id, email: user.email };
@@ -127,7 +127,7 @@ export class AuthService {
     };
   }
 
-  async changePassword(userId: number, oldPassword: string, newPassword: string) {
+  async changePassword(userId: string, oldPassword: string, newPassword: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });

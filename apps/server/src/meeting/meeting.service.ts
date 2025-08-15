@@ -11,7 +11,7 @@ export class MeetingService {
     private livekitService: LiveKitService,
   ) {}
 
-  async createMeeting(createMeetingDto: CreateMeetingDto, userId: number) {
+  async createMeeting(createMeetingDto: CreateMeetingDto, userId: string) {
     const { title, description, startTime, endTime, maxParticipants } = createMeetingDto;
 
     // Validate meeting time
@@ -70,7 +70,7 @@ export class MeetingService {
     return updatedMeeting;
   }
 
-  async joinMeeting(joinMeetingDto: JoinMeetingDto, userId: number) {
+  async joinMeeting(joinMeetingDto: JoinMeetingDto, userId: string) {
     const { meetingId } = joinMeetingDto;
 
     // Find meeting
