@@ -10,10 +10,8 @@ async function bootstrap() {
 
   // Enable CORS
   app.enableCors({
-    origin: configService.get('FRONTEND_URL') || 'http://localhost:5173',
+    origin: true,
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   });
 
   // Global validation pipe
@@ -62,17 +60,6 @@ async function bootstrap() {
       showRequestDuration: true,
     },
     customSiteTitle: 'Stellar API Documentation',
-  });
-
-  // Health check endpoint
-  app.get('/health', (req, res) => {
-    res.json({
-      status: 'ok',
-      timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
-      environment: configService.get('NODE_ENV') || 'development',
-      version: '1.0.0',
-    });
   });
 
   // Graceful shutdown

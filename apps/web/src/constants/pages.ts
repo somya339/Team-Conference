@@ -1,6 +1,6 @@
 export const Page = {
-  SignIn: '/',
-  SignUp: '/sign-up',
+  SignIn: '/signin',
+  SignUp: '/signup',
   Dashboard: '/dashboard',
   Meeting: (code: string) => `/meeting/${code}`,
   MeetingHistory: '/meeting-history',

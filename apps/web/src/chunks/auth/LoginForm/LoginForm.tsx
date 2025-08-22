@@ -27,9 +27,9 @@ const LoginForm: FC = () => {
           </div>
         ))}
       </div>
-      {h.apiRequest.errors.length > 0 && (
+      {h.apiRequest?.errors?.length > 0 && (
         <div className="rounded-md border border-danger bg-danger/20 p-2 text-sm capitalize text-danger">
-          {h.apiRequest.errors[0]}
+          {h.apiRequest?.errors[0]}
         </div>
       )}
       <Button type="submit" disabled={h.apiRequest.loading}>

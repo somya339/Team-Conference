@@ -11,9 +11,9 @@ export class SubmissionService {
   ) {
     // Configure Cloudinary
     cloudinary.config({
-      cloud_name: this.config.get<string>('cloudinary.cloudName'),
-      api_key: this.config.get<string>('cloudinary.apiKey'),
-      api_secret: this.config.get<string>('cloudinary.apiSecret'),
+      cloud_name: this.config.get<string>('app.cloudinary.cloudName'),
+      api_key: this.config.get<string>('app.cloudinary.apiKey'),
+      api_secret: this.config.get<string>('app.cloudinary.apiSecret'),
     });
   }
 
@@ -61,7 +61,7 @@ export class SubmissionService {
         user: {
           select: {
             id: true,
-            username: true,
+            name: true,
             email: true,
           },
         },
@@ -78,7 +78,7 @@ export class SubmissionService {
         user: {
           select: {
             id: true,
-            username: true,
+            name: true,
             email: true,
           },
         },

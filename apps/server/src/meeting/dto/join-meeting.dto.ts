@@ -3,11 +3,11 @@ import { IsNotEmpty, MaxLength, MinLength } from 'class-validator';
 
 export class JoinMeetingDto {
   @ApiProperty({
-    description: 'Unique meeting code',
+    description: 'Unique meeting code or ID',
     example: 'abcxyz123',
   })
   @IsNotEmpty()
-  @MinLength(9)
-  @MaxLength(9)
-  code: string;
+  @MinLength(1)
+  @MaxLength(50)
+  meetingId: string;
 }

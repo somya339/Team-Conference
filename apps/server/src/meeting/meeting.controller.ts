@@ -21,39 +21,50 @@ import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 export class MeetingController {
   constructor(private readonly meetingService: MeetingService) {}
 
-  @Get('created')
-  @ApiResponse({ status: 200, description: 'Meetings retrieved successfully.' })
+  @Get()
+  @ApiResponse({ status: 200, description: 'User meetings retrieved successfully.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
-  getCreatedMeetings(@Req() req: any) {
+  getUserMeetings(@Req() req: any) {
     const userId = req.user.userId;
-    return this.meetingService.getCreatedMeetings(userId);
+    return this.meetingService.getUserMeetings(userId);
   }
 
-  @Get(':code')
+  @Get(':id')
   @ApiResponse({ status: 200, description: 'Meeting retrieved successfully.' })
   @ApiResponse({ status: 404, description: 'Meeting not found.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
-  getMeetingById(@Param('code') code: string) {
-    return this.meetingService.getMeetingByCode(code);
+  getMeeting(@Param('id') id: string, @Req() req: any) {
+    const userId = req.user.userId;
+    return this.meetingService.getMeeting(id, userId);
   }
 
   @Post()
   @ApiResponse({ status: 201, description: 'Meeting successfully created.' })
   @ApiResponse({ status: 400, description: 'Validation error.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
-  createMeeting(@Req() req: any, @Body() body: CreateMeetingDto) {
+  createMeeting(@Req() req: any, @Body() createMeetingDto: CreateMeetingDto) {
     const userId = req.user.userId;
-    return this.meetingService.createMeeting(userId, body);
+    return this.meetingService.createMeeting(createMeetingDto, userId);
   }
 
-  @Put('join')
+  @Post('join')
   @ApiResponse({ status: 200, description: 'Successfully joined the meeting.' })
   @ApiResponse({ status: 400, description: 'Validation error.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 404, description: 'Meeting not found.' })
-  joinMeeting(@Req() req: any, @Body() { code }: JoinMeetingDto) {
+  joinMeeting(@Req() req: any, @Body() joinMeetingDto: JoinMeetingDto) {
     const userId = req.user.userId;
-    return this.meetingService.joinMeeting(userId, code);
+    return this.meetingService.joinMeeting(joinMeetingDto, userId);
+  }
+
+  @Put(':id/end')
+  @ApiResponse({ status: 200, description: 'Meeting ended successfully.' })
+  @ApiResponse({ status: 400, description: 'Validation error.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  @ApiResponse({ status: 404, description: 'Meeting not found.' })
+  endMeeting(@Param('id') id: string, @Req() req: any) {
+    const userId = req.user.userId;
+    return this.meetingService.endMeeting(id, userId);
   }
 
   @Put('leave')
@@ -64,8 +75,8 @@ export class MeetingController {
     status: 404,
     description: 'Meeting or participant not found.',
   })
-  leaveMeeting(@Req() req: any, @Body() { code }: JoinMeetingDto) {
+  leaveMeeting(@Req() req: any, @Body() joinMeetingDto: JoinMeetingDto) {
     const userId = req.user.userId;
-    return this.meetingService.leaveMeeting(userId, code);
+    return this.meetingService.leaveMeeting(joinMeetingDto.meetingId, userId);
   }
 }

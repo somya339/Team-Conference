@@ -19,15 +19,23 @@ export class MeetingService {
       throw new BadRequestException('End time must be after start time');
     }
 
+    // Generate unique meeting code
+    const code = this.generateMeetingCode();
+
     // Create meeting in database
     const meeting = await this.prisma.meeting.create({
       data: {
         title,
         description,
+        code,
         startTime: startTime ? new Date(startTime) : null,
         endTime: endTime ? new Date(endTime) : null,
         maxParticipants: maxParticipants || 50,
-        createdBy: userId,
+        creator: {
+          connect: {
+            id: userId
+          }
+        },
         status: 'scheduled',
       },
       include: {
@@ -46,7 +54,6 @@ export class MeetingService {
     const room = await this.livekitService.createRoom(roomName, {
       maxParticipants: meeting.maxParticipants,
       emptyTimeout: 10 * 60, // 10 minutes
-      maxPublishers: 10,
     });
 
     // Update meeting with room information
@@ -70,12 +77,26 @@ export class MeetingService {
     return updatedMeeting;
   }
 
+  private generateMeetingCode(): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let result = '';
+    for (let i = 0; i < 9; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  }
+
   async joinMeeting(joinMeetingDto: JoinMeetingDto, userId: string) {
     const { meetingId } = joinMeetingDto;
 
-    // Find meeting
-    const meeting = await this.prisma.meeting.findUnique({
-      where: { id: meetingId },
+    // Find meeting by code or ID
+    const meeting = await this.prisma.meeting.findFirst({
+      where: {
+        OR: [
+          { id: meetingId },
+          { code: meetingId },
+        ],
+      },
       include: {
         creator: {
           select: {
@@ -119,7 +140,7 @@ export class MeetingService {
         data: {
           meetingId: meeting.id,
           userId,
-          joinedAt: new Date(),
+          joinTime: new Date(),
         },
         include: {
           user: {
@@ -134,7 +155,7 @@ export class MeetingService {
     }
 
     // Generate access token for LiveKit
-    const token = await this.livekitService.generateToken(meeting.roomName, userId.toString());
+    const token = await this.livekitService.generateToken(meeting.roomName, userId);
 
     return {
       meeting,
@@ -144,7 +165,7 @@ export class MeetingService {
     };
   }
 
-  async getMeeting(meetingId: number, userId: number) {
+  async getMeeting(meetingId: string, userId: string) {
     const meeting = await this.prisma.meeting.findUnique({
       where: { id: meetingId },
       include: {
@@ -184,7 +205,7 @@ export class MeetingService {
     return meeting;
   }
 
-  async getUserMeetings(userId: number) {
+  async getUserMeetings(userId: string) {
     const meetings = await this.prisma.meeting.findMany({
       where: {
         OR: [
@@ -218,7 +239,7 @@ export class MeetingService {
     return meetings;
   }
 
-  async endMeeting(meetingId: number, userId: number) {
+  async endMeeting(meetingId: string, userId: string) {
     const meeting = await this.prisma.meeting.findUnique({
       where: { id: meetingId },
     });
@@ -236,7 +257,7 @@ export class MeetingService {
       where: { id: meetingId },
       data: {
         status: 'ended',
-        endedAt: new Date(),
+        endTime: new Date(),
       },
     });
 
@@ -246,7 +267,7 @@ export class MeetingService {
     return updatedMeeting;
   }
 
-  async leaveMeeting(meetingId: number, userId: number) {
+  async leaveMeeting(meetingId: string, userId: string) {
     const participant = await this.prisma.meetingParticipant.findFirst({
       where: {
         meetingId,
@@ -261,7 +282,8 @@ export class MeetingService {
     await this.prisma.meetingParticipant.update({
       where: { id: participant.id },
       data: {
-        leftAt: new Date(),
+        leaveTime: new Date(),
+        isActive: false,
       },
     });
 

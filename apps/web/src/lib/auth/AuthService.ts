@@ -42,7 +42,7 @@ class AuthService {
     TOKEN: 'token',
   };
 
-  private state$ = new BehaviorSubject<AuthState>({
+  private _state$ = new BehaviorSubject<AuthState>({
     user: null,
     token: null,
     isAuthenticated: false,
@@ -91,46 +91,46 @@ class AuthService {
   }
 
   private updateState(updates: Partial<AuthState>): void {
-    const currentState = this.state$.value;
+    const currentState = this._state$.value;
     const newState = { ...currentState, ...updates };
-    this.state$.next(newState);
+    this._state$.next(newState);
   }
 
   // Observable getters
   get state$(): Observable<AuthState> {
-    return this.state$.asObservable();
+    return this._state$.asObservable();
   }
 
   get user$(): Observable<User | null> {
-    return this.state$.pipe(
+    return this._state$.pipe(
       map(state => state.user),
       distinctUntilChanged()
     );
   }
 
   get token$(): Observable<string | null> {
-    return this.state$.pipe(
+    return this._state$.pipe(
       map(state => state.token),
       distinctUntilChanged()
     );
   }
 
   get isAuthenticated$(): Observable<boolean> {
-    return this.state$.pipe(
+    return this._state$.pipe(
       map(state => state.isAuthenticated),
       distinctUntilChanged()
     );
   }
 
   get isLoading$(): Observable<boolean> {
-    return this.state$.pipe(
+    return this._state$.pipe(
       map(state => state.isLoading),
       distinctUntilChanged()
     );
   }
 
   get error$(): Observable<string | null> {
-    return this.state$.pipe(
+    return this._state$.pipe(
       map(state => state.error),
       distinctUntilChanged()
     );
@@ -138,15 +138,15 @@ class AuthService {
 
   // Synchronous getters
   get currentUser(): User | null {
-    return this.state$.value.user;
+    return this._state$.value.user;
   }
 
   get currentToken(): string | null {
-    return this.state$.value.token;
+    return this._state$.value.token;
   }
 
   get isAuthenticated(): boolean {
-    return this.state$.value.isAuthenticated;
+    return this._state$.value.isAuthenticated;
   }
 
   // Authentication methods

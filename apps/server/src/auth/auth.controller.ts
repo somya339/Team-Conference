@@ -12,15 +12,15 @@ export class AuthController {
   @Post('register')
   @ApiResponse({ status: 201, description: 'User successfully registered.' })
   @ApiResponse({ status: 400, description: 'Validation error.' })
-  async register(@Body() { name, email, password }: RegisterDto) {
-    return this.authService.register(name, email, password);
+  async register(@Body() registerDto: RegisterDto) {
+    return this.authService.register(registerDto);
   }
 
   @Post('login')
   @HttpCode(200)
   @ApiResponse({ status: 200, description: 'User successfully logged in.' })
   @ApiResponse({ status: 400, description: 'Invalid credentials.' })
-  async login(@Body() { email, password }: LoginDto) {
-    return this.authService.login(email, password);
+  async login(@Body() loginDto: LoginDto) {
+    return this.authService.login(loginDto);
   }
 }

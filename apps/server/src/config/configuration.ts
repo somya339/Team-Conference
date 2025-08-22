@@ -46,6 +46,12 @@ export interface EmailConfig {
   from: string;
 }
 
+export interface CloudinaryConfig {
+  cloudName: string;
+  apiKey: string;
+  apiSecret: string;
+}
+
 export default registerAs('app', () => ({
   database: {
     url: process.env.DATABASE_URL || 'file:./dev.db',
@@ -100,4 +106,10 @@ export default registerAs('app', () => ({
     },
     from: process.env.EMAIL_FROM || 'noreply@stellar-conferencing.com',
   } as EmailConfig,
+
+  cloudinary: {
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME || 'your-cloud-name',
+    apiKey: process.env.CLOUDINARY_API_KEY || 'your-api-key',
+    apiSecret: process.env.CLOUDINARY_API_SECRET || 'your-api-secret',
+  } as CloudinaryConfig,
 }));

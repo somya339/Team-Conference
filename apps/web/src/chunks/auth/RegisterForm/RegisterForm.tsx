@@ -26,11 +26,11 @@ const RegisterForm: FC = () => {
           </div>
         ))}
       </div>
-      {h.apiRequest.errors.length > 0 && (
+      {h.apiRequest?.errors?.length > 0 && (
         <div className="rounded-md border border-danger bg-danger/20 p-2 text-sm text-danger">
           <h3 className="font-semibold">Please fix these errors and try again</h3>
           <ul className="mt-2 space-y-1">
-            {h.apiRequest.errors.map((error, index) => (
+            {h.apiRequest?.errors?.map((error, index) => (
               <li key={index} className="capitalize">
                 &bull; {error}
               </li>

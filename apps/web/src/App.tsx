@@ -5,11 +5,11 @@ import { authService } from './lib/auth/AuthService';
 import { config } from './lib/config';
 
 // Lazy load components for better performance
-const SignIn = React.lazy(() => import('./pages/SignIn').then(module => ({ default: module.SignIn })));
-const SignUp = React.lazy(() => import('./pages/SignUp').then(module => ({ default: module.SignUp })));
+const SignIn = React.lazy(() => import('./pages/SignIn'));
+const SignUp = React.lazy(() => import('./pages/SignUp'));
 const Dashboard = React.lazy(() => import('./pages/Dashboard/Dashboard').then(module => ({ default: module.Dashboard })));
-const Meeting = React.lazy(() => import('./pages/Meeting/Meeting').then(module => ({ default: module.Meeting })));
-const MeetingHistory = React.lazy(() => import('./pages/MeetingHistory/MeetingHistory').then(module => ({ default: module.MeetingHistory })));
+const Meeting = React.lazy(() => import('./pages/Meeting/Meeting'));
+const MeetingHistory = React.lazy(() => import('./pages/MeetingHistory/MeetingHistory'));
 
 // Loading component
 const LoadingSpinner: React.FC = () => (

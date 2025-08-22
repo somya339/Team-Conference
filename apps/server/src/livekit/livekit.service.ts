@@ -5,7 +5,6 @@ import { AccessToken, RoomServiceClient } from 'livekit-server-sdk';
 export interface RoomOptions {
   maxParticipants?: number;
   emptyTimeout?: number;
-  maxPublishers?: number;
 }
 
 @Injectable()
@@ -13,9 +12,9 @@ export class LiveKitService {
   private roomService: RoomServiceClient;
 
   constructor(private configService: ConfigService) {
-    const apiKey = this.configService.get<string>('LIVEKIT_API_KEY');
-    const apiSecret = this.configService.get<string>('LIVEKIT_SECRET');
-    const url = this.configService.get<string>('LIVEKIT_URL');
+    const apiKey = this.configService.get<string>('app.livekit.apiKey');
+    const apiSecret = this.configService.get<string>('app.livekit.secret');
+    const url = this.configService.get<string>('app.livekit.url');
 
     if (!apiKey || !apiSecret || !url) {
       throw new Error('LiveKit configuration is missing');
@@ -28,7 +27,6 @@ export class LiveKitService {
     const {
       maxParticipants = 50,
       emptyTimeout = 10 * 60, // 10 minutes
-      maxPublishers = 10,
     } = options;
 
     try {
@@ -36,7 +34,6 @@ export class LiveKitService {
         name: roomName,
         maxParticipants,
         emptyTimeout,
-        maxPublishers,
         metadata: JSON.stringify({
           createdAt: new Date().toISOString(),
         }),
@@ -44,19 +41,22 @@ export class LiveKitService {
 
       return {
         name: room.name,
-        url: this.configService.get<string>('LIVEKIT_URL'),
+        url: this.configService.get<string>('app.livekit.url'),
         maxParticipants: room.maxParticipants,
         emptyTimeout: room.emptyTimeout,
-        maxPublishers: room.maxPublishers,
       };
     } catch (error) {
       throw new Error(`Failed to create LiveKit room: ${error.message}`);
     }
   }
 
-  async generateToken(roomName: string, participantIdentity: string, participantName?: string) {
-    const apiKey = this.configService.get<string>('LIVEKIT_API_KEY');
-    const apiSecret = this.configService.get<string>('LIVEKIT_SECRET');
+  async generateToken(
+    roomName: string,
+    participantIdentity: string,
+    participantName?: string,
+  ) {
+    const apiKey = this.configService.get<string>('app.livekit.apiKey');
+    const apiSecret = this.configService.get<string>('app.livekit.secret');
 
     if (!apiKey || !apiSecret) {
       throw new Error('LiveKit API credentials are missing');
@@ -86,14 +86,6 @@ export class LiveKitService {
     }
   }
 
-  async getRoom(roomName: string) {
-    try {
-      return await this.roomService.getRoom(roomName);
-    } catch (error) {
-      throw new Error(`Failed to get LiveKit room: ${error.message}`);
-    }
-  }
-
   async listRooms() {
     try {
       return await this.roomService.listRooms();
@@ -102,4 +94,3 @@ export class LiveKitService {
     }
   }
 }
-
