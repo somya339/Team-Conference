@@ -54,7 +54,7 @@ export interface CloudinaryConfig {
 
 export default registerAs('app', () => ({
   database: {
-    url: process.env.DATABASE_URL || 'file:./dev.db',
+    url: process.env.DATABASE_URL,
   } as DatabaseConfig,
 
   jwt: {
