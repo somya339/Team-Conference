@@ -7,10 +7,23 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
+.pnp
+.pnp.js
+
+# Build outputs
 dist
 dist-ssr
-*.local
+build
+.next
+out
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+!.env.example
 
 # Editor directories and files
 .vscode/*
@@ -18,6 +31,21 @@ dist-ssr
 .idea
 .DS_Store
 *.suo
+*.sublime-*
+
+# Local development
+*.local
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Misc
+.cache
+coverage
+.vercel
+.netlify
 *.ntvs*
 *.njsproj
 *.sln

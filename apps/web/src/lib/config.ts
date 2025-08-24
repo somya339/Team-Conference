@@ -1,5 +1,5 @@
 export const config = {
-  serverUrl: 'http://localhost:3000/api',
+  serverUrl: import.meta.env.VITE_API_URL || 'http://localhost:3000/api',
   livekitUrl: import.meta.env.VITE_LIVEKIT_URL || 'ws://localhost:7880',
   appName: 'Stellar Conferencing',
   version: '1.0.0',

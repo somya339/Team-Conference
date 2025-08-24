@@ -1,0 +1,25 @@
+[Unit]
+Description=Stellar Conferencing Server
+After=network.target
+
+[Service]
+Type=simple
+User=node
+WorkingDirectory=/var/www/stellar-conferencing/server
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/npm start
+Restart=always
+RestartSec=10
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=stellar-server
+
+# Security options
+NoNewPrivileges=true
+ProtectSystem=full
+PrivateTmp=true
+ProtectHome=true
+ReadWritePaths=/var/www/stellar-conferencing/server/logs
+
+[Install]
+WantedBy=multi-user.target

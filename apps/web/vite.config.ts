@@ -3,8 +3,11 @@ import react from '@vitejs/plugin-react';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [react(), tsconfigPaths()],
+  
+  // Base URL for production
+  base: mode === 'production' ? '/' : '/',
   
   // Development server configuration
   server: {
@@ -25,8 +28,9 @@ export default defineConfig({
   build: {
     target: 'esnext',
     outDir: 'dist',
-    sourcemap: true,
-    minify: 'terser',
+    sourcemap: mode === 'production' ? false : 'inline',
+    minify: mode === 'production' ? 'terser' : false,
+    chunkSizeWarningLimit: 1600,
     rollupOptions: {
       output: {
         manualChunks: {
@@ -82,4 +86,17 @@ export default defineConfig({
       '@': '/src',
     },
   },
-});
+  
+  // Environment variables
+  define: {
+    'process.env': {}
+  },
+  
+  // Optimize deps for production
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom'],
+    esbuildOptions: {
+      target: 'es2020'
+    }
+  }
+}));
