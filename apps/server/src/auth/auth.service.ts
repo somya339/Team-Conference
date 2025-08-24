@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
@@ -7,6 +7,8 @@ import { RegisterDto } from './dto/register.dto';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
@@ -14,6 +16,8 @@ export class AuthService {
 
   async register(registerDto: RegisterDto) {
     const { email, password, name } = registerDto;
+    
+    this.logger.log(`Registration attempt for email: ${email}`);
 
     // Check if user already exists
     const existingUser = await this.prisma.user.findUnique({
@@ -21,14 +25,17 @@ export class AuthService {
     });
 
     if (existingUser) {
+      this.logger.warn(`Registration failed: User already exists with email: ${email}`);
       throw new ConflictException('User with this email already exists');
     }
 
     // Hash password
     const saltRounds = 12;
+    this.logger.debug(`Hashing password with ${saltRounds} rounds for email: ${email}`);
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     // Create user
+    this.logger.debug(`Creating user in database for email: ${email}`);
     const user = await this.prisma.user.create({
       data: {
         email,
@@ -46,7 +53,10 @@ export class AuthService {
 
     // Generate JWT token
     const payload = { sub: user.id, email: user.email };
+    this.logger.debug(`Generating JWT token for user ID: ${user.id}`);
     const token = this.jwtService.sign(payload);
+
+    this.logger.log(`User registered successfully: ${email} (ID: ${user.id})`);
 
     return {
       user,
@@ -57,6 +67,8 @@ export class AuthService {
 
   async login(loginDto: LoginDto) {
     const { email, password } = loginDto;
+    
+    this.logger.log(`Login attempt for email: ${email}`);
 
     // Find user
     const user = await this.prisma.user.findUnique({
@@ -64,24 +76,31 @@ export class AuthService {
     });
 
     if (!user) {
+      this.logger.warn(`Login failed: User not found for email: ${email}`);
       throw new UnauthorizedException('Invalid credentials');
     }
 
     // Verify password
+    this.logger.debug(`Verifying password for user: ${email}`);
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
+      this.logger.warn(`Login failed: Invalid password for email: ${email}`);
       throw new UnauthorizedException('Invalid credentials');
     }
 
     // Generate JWT token
     const payload = { sub: user.id, email: user.email };
+    this.logger.debug(`Generating JWT token for user ID: ${user.id}`);
     const token = this.jwtService.sign(payload);
 
     // Update last login
+    this.logger.debug(`Updating last login time for user ID: ${user.id}`);
     await this.prisma.user.update({
       where: { id: user.id },
       data: { lastLoginAt: new Date() },
     });
+
+    this.logger.log(`User logged in successfully: ${email} (ID: ${user.id})`);
 
     return {
       user: {

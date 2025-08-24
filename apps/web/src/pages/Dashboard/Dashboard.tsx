@@ -5,7 +5,7 @@ import { Button } from '../../components/Button/Button';
 import { AppLogo } from '../../components/AppLogo/AppLogo';
 import { CreateMeeting } from '../../chunks/dashboard/CreateMeeting/CreateMeeting';
 import { JoinMeeting } from '../../chunks/dashboard/JoinMeeting/JoinMeeting';
-import { useDashboard } from './useDashboard';
+import  useDashboard  from './useDashboard';
 import { config } from '../../lib/config';
 import { formatDate } from '../../lib/utils';
 
@@ -25,32 +25,45 @@ export const Dashboard: React.FC = () => {
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'upcoming' | 'past'>('upcoming');
 
+  // Remove this useEffect - authentication is handled by ProtectedRoute in App.tsx
   useEffect(() => {
     if (!user) {
       navigate('/signin');
     }
-  }, [user, navigate]);
+  }, [user]);
 
-  const upcomingMeetings = meetings.filter(
-    (meeting) => new Date(meeting.startTime || meeting.createdAt) > new Date()
-  );
-  const pastMeetings = meetings.filter(
-    (meeting) => new Date(meeting.startTime || meeting.createdAt) <= new Date()
-  );
+  const upcomingMeetings = meetings?.filter((meeting) => {
+    // If meeting has a startTime, use it to determine if it's upcoming
+    if (meeting.startTime) {
+      return new Date(meeting.startTime) > new Date();
+    }
+    // If no startTime, consider it upcoming (newly created meetings without schedule)
+    return true;
+  });
+  const pastMeetings = meetings?.filter((meeting) => {
+    // Only show in past if it has a startTime and it's in the past
+    if (meeting.startTime) {
+      return new Date(meeting.startTime) <= new Date();
+    }
+    // If no startTime, don't show in past
+    return false;
+  });
 
   const handleCreateMeeting = async (meetingData: any) => {
     try {
-      await createMeeting(meetingData);
-      setShowCreateModal(false);
+      const result = await createMeeting(meetingData);
+      // Don't close modal here - let CreateMeeting component handle success state
+      return result;
     } catch (error) {
       console.error('Failed to create meeting:', error);
+      throw error;
     }
   };
 
-  const handleJoinMeeting = async (meetingId: string) => {
+  const handleJoinMeeting = async (meetingCode: string) => {
     try {
-      const result = await joinMeeting(meetingId);
-      navigate(`/meeting/${result.meeting.id}`);
+      await joinMeeting(meetingCode);
+      navigate(`/meeting/${meetingCode}`);
     } catch (error) {
       console.error('Failed to join meeting:', error);
     }
@@ -227,7 +240,7 @@ export const Dashboard: React.FC = () => {
                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                     }`}
                   >
-                    Upcoming ({upcomingMeetings.length})
+                    Upcoming ({upcomingMeetings?.length})
                   </button>
                   <button
                     onClick={() => setActiveTab('past')}
@@ -237,7 +250,7 @@ export const Dashboard: React.FC = () => {
                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                     }`}
                   >
-                    Past ({pastMeetings.length})
+                    Past ({pastMeetings?.length})
                   </button>
                 </div>
               </div>
@@ -246,7 +259,7 @@ export const Dashboard: React.FC = () => {
             <div className="p-6">
               {activeTab === 'upcoming' ? (
                 <div>
-                  {upcomingMeetings.length === 0 ? (
+                  {upcomingMeetings?.length === 0 ? (
                     <div className="text-center py-12">
                       <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                         <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -264,7 +277,7 @@ export const Dashboard: React.FC = () => {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {upcomingMeetings.map((meeting) => (
+                      {upcomingMeetings?.map((meeting) => (
                         <div
                           key={meeting.id}
                           className="border border-gray-200 rounded-xl p-6 hover:shadow-md transition-all duration-200 hover:border-blue-200 bg-gradient-to-r from-white to-blue-50/30"
@@ -273,10 +286,10 @@ export const Dashboard: React.FC = () => {
                             <div className="flex-1">
                               <div className="flex items-center space-x-3 mb-2">
                                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                <h4 className="text-lg font-semibold text-gray-900">{meeting.title}</h4>
+                                <h4 className="text-lg font-semibold text-gray-900">{meeting?.title}</h4>
                               </div>
-                              {meeting.description && (
-                                <p className="text-gray-600 mb-3">{meeting.description}</p>
+                              {meeting?.description && (
+                                <p className="text-gray-600 mb-3">{meeting?.description}</p>
                               )}
                               <div className="flex items-center space-x-4 text-sm text-gray-500">
                                 <span className="flex items-center">
@@ -308,7 +321,7 @@ export const Dashboard: React.FC = () => {
                             <div className="flex space-x-2 ml-6">
                               <Button
                                 size="sm"
-                                onClick={() => handleJoinMeeting(meeting.id.toString())}
+                                onClick={() => handleJoinMeeting(meeting.code)}
                                 className="bg-blue-600 hover:bg-blue-700"
                               >
                                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -325,7 +338,7 @@ export const Dashboard: React.FC = () => {
                 </div>
               ) : (
                 <div>
-                  {pastMeetings.length === 0 ? (
+                  {pastMeetings?.length === 0 ? (
                     <div className="text-center py-12">
                       <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                         <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -337,7 +350,7 @@ export const Dashboard: React.FC = () => {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {pastMeetings.map((meeting) => (
+                      {pastMeetings?.map((meeting) => (
                         <div
                           key={meeting.id}
                           className="border border-gray-200 rounded-xl p-6 bg-gray-50/50"
@@ -346,10 +359,10 @@ export const Dashboard: React.FC = () => {
                             <div className="flex-1">
                               <div className="flex items-center space-x-3 mb-2">
                                 <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                                <h4 className="text-lg font-semibold text-gray-900">{meeting.title}</h4>
+                                <h4 className="text-lg font-semibold text-gray-900">{meeting?.title}</h4>
                               </div>
-                              {meeting.description && (
-                                <p className="text-gray-600 mb-3">{meeting.description}</p>
+                              {meeting?.description && (
+                                <p className="text-gray-600 mb-3">{meeting?.description}</p>
                               )}
                               <div className="flex items-center space-x-4 text-sm text-gray-500">
                                 <span className="flex items-center">

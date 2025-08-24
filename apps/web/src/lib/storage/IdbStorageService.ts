@@ -170,6 +170,15 @@ class IdbStorageService {
     }
   }
 
+  async removeSetting(key: string): Promise<void> {
+    try {
+      const db = await this.ensureDB();
+      await db.delete('settings', key);
+    } catch (error) {
+      console.error('Failed to remove setting:', error);
+    }
+  }
+
   // Cache operations with TTL
   async setCache(key: string, value: any, ttlMinutes: number = 60): Promise<void> {
     try {

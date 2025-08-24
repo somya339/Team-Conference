@@ -5,37 +5,57 @@ import { Link } from 'react-router-dom';
 import Button from '@/components/Button/Button.tsx';
 import FormError from '@/components/FormError/FormError.tsx';
 import Textbox from '@/components/Textbox/Textbox.tsx';
+import { Modal } from '@/components/Modal.tsx';
 import { copyToClipboard, formatMeetingCode } from '@/lib/utils.ts';
 
 import { createMeetingFields } from './CreateMeeting.config.ts';
 import useCreateMeeting from './useCreateMeeting.ts';
 
-const CreateMeeting: FC = () => {
+interface CreateMeetingProps {
+  onClose: () => void;
+  onSubmit: (data: any) => Promise<any>;
+}
+
+export const CreateMeeting: FC<CreateMeetingProps> = ({ onClose , onSubmit }) => {
   const h = useCreateMeeting();
+
+  const handleFormSubmit = h.form.handleSubmit(async (data) => {
+    try {
+      const result = await onSubmit(data);
+      if (result) {
+        h.setCreatedMeeting(result);
+      }
+    } catch (error) {
+      console.error('Failed to create meeting:', error);
+    }
+  });
 
   if (h.createdMeeting) {
     const formattedCode = formatMeetingCode(h.createdMeeting.code);
     return (
-      <div className="flex flex-col gap-8">
-        <h1 className="text-2xl font-semibold text-dark">Meeting created</h1>
-        <div className="grid grid-cols-2 gap-2">
-          <Button variant="subtle" onClick={() => copyToClipboard(formattedCode)}>
-            {formattedCode}
-            <Icon icon="solar:copy-bold" className="ml-2 size-6" />
-          </Button>
-          <Button onClick={() => copyToClipboard(h.meetingLink)}>
-            <Icon icon="solar:copy-bold" className="size-6" /> Copy link
+      <Modal isOpen={true} onClose={onClose} title="Meeting Created">
+        <div className="flex flex-col gap-8">
+          <h1 className="text-2xl font-semibold text-dark">Meeting created</h1>
+          <div className="grid grid-cols-2 gap-2">
+            <Button variant="subtle" onClick={() => copyToClipboard(formattedCode)}>
+              {formattedCode}
+              <Icon icon="solar:copy-bold" className="ml-2 size-6" />
+            </Button>
+            <Button onClick={() => copyToClipboard(h.meetingLink)}>
+              <Icon icon="solar:copy-bold" className="size-6" /> Copy link
+            </Button>
+          </div>
+          <Button asChild>
+            <Link to={h.meetingLink}>Join the meeting</Link>
           </Button>
         </div>
-        <Button asChild>
-          <Link to={h.meetingLink}>Join the meeting</Link>
-        </Button>
-      </div>
+      </Modal>
     );
   }
 
   return (
-    <form onSubmit={h.handleSubmit} className="flex flex-col gap-8">
+    <Modal isOpen={true} onClose={onClose} title="Create Meeting">
+      <form onSubmit={handleFormSubmit} className="flex flex-col gap-8">
       <h1 className="font-semibold">Create a Meeting</h1>
       <div className="flex flex-col gap-4">
         {createMeetingFields.map(({ fieldName, component, ...props }) => {
@@ -49,11 +69,11 @@ const CreateMeeting: FC = () => {
           );
         })}
       </div>
-      {h.apiRequest.errors.length > 0 && (
+      {h.apiRequest?.errors?.length > 0 && (
         <div className="rounded-md border border-danger bg-danger/20 p-2 text-sm text-danger">
           <h3 className="font-semibold">Please fix these errors and try again</h3>
           <ul className="mt-2 space-y-1">
-            {h.apiRequest.errors.map((error, index) => (
+            {h.apiRequest?.errors?.map((error, index) => (
               <li key={index} className="capitalize">
                 &bull; {error}
               </li>
@@ -61,11 +81,10 @@ const CreateMeeting: FC = () => {
           </ul>
         </div>
       )}
-      <Button type="submit" disabled={h.apiRequest.loading}>
+      <Button type="submit" disabled={h.apiRequest?.loading}>
         Create meeting
       </Button>
-    </form>
+      </form>
+    </Modal>
   );
 };
-
-export default CreateMeeting;

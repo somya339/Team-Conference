@@ -84,18 +84,26 @@ class ErrorBoundary extends React.Component<
 
 // Protected route component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = React.useState<boolean | null>(null);
+  const [authState, setAuthState] = React.useState<{ isAuthenticated: boolean | null; isLoading: boolean }>({
+    isAuthenticated: null,
+    isLoading: true
+  });
 
   useEffect(() => {
-    const subscription = authService.isAuthenticated$.subscribe(setIsAuthenticated);
+    const subscription = authService.state$.subscribe(state => {
+      setAuthState({
+        isAuthenticated: state.isAuthenticated,
+        isLoading: state.isLoading
+      });
+    });
     return () => subscription.unsubscribe();
   }, []);
 
-  if (isAuthenticated === null) {
+  if (authState.isLoading || authState.isAuthenticated === null) {
     return <LoadingSpinner />;
   }
 
-  if (!isAuthenticated) {
+  if (!authState.isAuthenticated) {
     return <Navigate to="/signin" replace />;
   }
 
@@ -104,18 +112,26 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
 // Public route component (redirects if already authenticated)
 const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = React.useState<boolean | null>(null);
+  const [authState, setAuthState] = React.useState<{ isAuthenticated: boolean | null; isLoading: boolean }>({
+    isAuthenticated: null,
+    isLoading: true
+  });
 
   useEffect(() => {
-    const subscription = authService.isAuthenticated$.subscribe(setIsAuthenticated);
+    const subscription = authService.state$.subscribe(state => {
+      setAuthState({
+        isAuthenticated: state.isAuthenticated,
+        isLoading: state.isLoading
+      });
+    });
     return () => subscription.unsubscribe();
   }, []);
 
-  if (isAuthenticated === null) {
+  if (authState.isLoading || authState.isAuthenticated === null) {
     return <LoadingSpinner />;
   }
 
-  if (isAuthenticated) {
+  if (authState.isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
   }
 

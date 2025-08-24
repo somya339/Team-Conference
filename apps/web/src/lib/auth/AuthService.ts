@@ -151,11 +151,19 @@ class AuthService {
 
   // Authentication methods
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
+    console.log('🔐 AuthService: Login attempt', { email: credentials.email, timestamp: new Date().toISOString() });
+    
     try {
       this.updateState({ isLoading: true, error: null });
 
       const response = await api.post<AuthResponse>('/auth/login', credentials);
       const { user, token, message } = response.data;
+      
+      console.log('✅ AuthService: Login successful', { 
+        userId: user.id, 
+        email: user.email, 
+        timestamp: new Date().toISOString() 
+      });
 
       // Store in IndexedDB
       await Promise.all([
@@ -174,6 +182,11 @@ class AuthService {
       return { user, token, message };
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || 'Login failed';
+      console.error('❌ AuthService: Login failed', { 
+        email: credentials.email, 
+        error: errorMessage, 
+        timestamp: new Date().toISOString() 
+      });
       this.updateState({
         isLoading: false,
         error: errorMessage,
@@ -183,11 +196,23 @@ class AuthService {
   }
 
   async register(credentials: RegisterCredentials): Promise<AuthResponse> {
+    console.log('📝 AuthService: Registration attempt', { 
+      email: credentials.email, 
+      name: credentials.name, 
+      timestamp: new Date().toISOString() 
+    });
+    
     try {
       this.updateState({ isLoading: true, error: null });
 
       const response = await api.post<AuthResponse>('/auth/register', credentials);
       const { user, token, message } = response.data;
+      
+      console.log('✅ AuthService: Registration successful', { 
+        userId: user.id, 
+        email: user.email, 
+        timestamp: new Date().toISOString() 
+      });
 
       // Store in IndexedDB
       await Promise.all([
@@ -206,6 +231,11 @@ class AuthService {
       return { user, token, message };
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || 'Registration failed';
+      console.error('❌ AuthService: Registration failed', { 
+        email: credentials.email, 
+        error: errorMessage, 
+        timestamp: new Date().toISOString() 
+      });
       this.updateState({
         isLoading: false,
         error: errorMessage,
@@ -321,12 +351,16 @@ class AuthService {
 
   // Auto-refresh token before expiry
   startTokenRefresh(): void {
-    // Check token every 5 minutes
-    setInterval(async () => {
-      if (this.isAuthenticated) {
-        await this.refreshToken();
-      }
-    }, 5 * 60 * 1000);
+    // Disable automatic token refresh for now to prevent logout issues
+    // TODO: Implement proper token refresh when backend endpoint is ready
+    console.log('Token refresh disabled - implement when /auth/refresh endpoint is available');
+    
+    // Uncomment when backend supports token refresh:
+    // setInterval(async () => {
+    //   if (this.isAuthenticated) {
+    //     await this.refreshToken();
+    //   }
+    // }, 5 * 60 * 1000);
   }
 }
 

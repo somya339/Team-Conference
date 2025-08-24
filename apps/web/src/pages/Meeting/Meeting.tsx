@@ -12,47 +12,67 @@ import { Room, Track } from 'livekit-client';
 import { useSnackbar } from 'notistack';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { Icon } from '@iconify/react';
 
-import AppLogo from '@/components/AppLogo/AppLogo.tsx';
-import Button from '@/components/Button/Button.tsx';
-import Modal, { ModalRef } from '@/components/Modal.tsx';
-import { Page } from '@/constants/pages.ts';
-import { apiClient } from '@/lib/api/axios.ts';
-import { useApiRequest } from '@/lib/api/useApiRequest.ts';
-import { authService } from '@/lib/auth/AuthService.ts';
-import { Env } from '@/lib/config.ts';
-import useRxState from '@/lib/storage/useRxState.ts';
-import { formatMeetingCode } from '@/lib/utils.ts';
-import SubmissionPortal from '@/chunks/meeting/SubmissionPortal.tsx';
+import { AppLogo } from '../../components/AppLogo/AppLogo';
+import { Button } from '../../components/Button/Button';
+import { Modal } from '../../components/Modal';
+import { apiClient } from '../../lib/api/axios';
+import { authService } from '../../lib/auth/AuthService';
+import useRxState from '../../lib/storage/useRxState';
+import { formatMeetingCode } from '../../lib/utils';
 
-import { JoinMeetingRes } from './Meeting.types.ts';
-import {Icon} from '@iconify/react'
+interface Meeting {
+  id: string;
+  title: string;
+  code: string;
+  roomName: string;
+  roomUrl: string;
+}
+
+interface JoinMeetingRes {
+  meeting: Meeting;
+  token: string;
+}
 
 function Meeting() {
   const { code } = useParams<{ code: string }>();
   const [meeting, setMeeting] = useState<JoinMeetingRes['meeting']>();
   const [token, setToken] = useState<string>();
-  const user = useRxState(authService.userStorage.data$);
+  const user = useRxState(authService.user$);
   const room = useMemo(() => new Room(), []);
-  const joinApiRequest = useApiRequest<JoinMeetingRes>();
-  const submitApiRequest = useApiRequest<{ success: boolean }>();
   const navigate = useNavigate();
-  const submitModalRef = useRef<ModalRef>(null);
+  const submitModalRef = useRef<any>(null);
   const { enqueueSnackbar } = useSnackbar();
 
-  const mounted = () => {
-    joinApiRequest.makeRequest(apiClient.put('meetings/join', { code })).subscribe(async (res) => {
-      if (res) {
-        setToken(res.token);
-        setMeeting(res.meeting);
+  useEffect(() => {
+    const joinMeeting = async () => {
+      if (!code) return;
+      
+      try {
+        // First fetch meeting details
+        const meetingResponse = await apiClient.get(`/meetings/${code}`);
+        setMeeting(meetingResponse.data);
+        
+        // Then join the meeting to get LiveKit token
+        const joinResponse = await apiClient.post('/meetings/join', { meetingId: code });
+        setToken(joinResponse.data.token);
+      } catch (error) {
+        console.error('Failed to join meeting:', error);
+        navigate('/dashboard');
       }
-    });
-  };
-  useEffect(mounted, []);
+    };
+    
+    joinMeeting();
+  }, [code, navigate]);
 
   const leaveRoom = async () => {
+    try {
+      await apiClient.put('/meetings/leave', { code });
+    } catch (error) {
+      console.error('Failed to leave meeting:', error);
+    }
     navigate(Page.Dashboard);
-    joinApiRequest.makeRequest(apiClient.put('meetings/leave', { code }));
   };
 
   const handleSubmit = async (files: File[]) => {
@@ -63,28 +83,16 @@ function Meeting() {
     formData.append('file', file, file.name);
     
     try {
-      submitApiRequest.makeRequest(
-        apiClient.post(`submissions/${meeting.id}`, formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        })
-      ).subscribe({
-        next: (res) => {
-          if (res) {
-            enqueueSnackbar('Document submitted successfully! You may leave the meeting now.', {
-              variant: 'success',
-              autoHideDuration: 5000,
-            });
-            submitModalRef.current?.dismiss();
-          }
-        },
-        error: (error) => {
-          enqueueSnackbar(error.response?.data?.message || 'Failed to submit document', {
-            variant: 'error',
-          });
-        }
-      });
+      try {
+        await apiClient.post(`/meetings/${meeting.id}/files`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        enqueueSnackbar('Files uploaded successfully', { variant: 'success' });
+        submitModalRef.current?.dismiss();
+      } catch (error) {
+        console.error('Failed to upload files:', error);
+        enqueueSnackbar('Failed to upload files', { variant: 'error' });
+      }
     } catch (error) {
       enqueueSnackbar('Failed to submit document', {
         variant: 'error',
@@ -126,7 +134,7 @@ function Meeting() {
         video={true}
         audio={true}
         token={token}
-        serverUrl={Env.LiveKitUrl}
+        serverUrl={import.meta.env.VITE_LIVEKIT_URL || 'ws://localhost:7880'}
         data-lk-theme="default"
         style={{ height: '100vh' }}
         onDisconnected={leaveRoom}

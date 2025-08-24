@@ -2,7 +2,7 @@ import { Icon } from '@iconify/react';
 import cn from 'classnames';
 import { ComponentProps, FC } from 'react';
 
-const AppLogo: FC<Pick<ComponentProps<'div'>, 'className'>> = (props) => {
+export const AppLogo: FC<Pick<ComponentProps<'div'>, 'className'>> = (props) => {
   return (
     <div
       className={cn(
@@ -17,5 +17,3 @@ const AppLogo: FC<Pick<ComponentProps<'div'>, 'className'>> = (props) => {
     </div>
   );
 };
-
-export default AppLogo;

@@ -22,6 +22,11 @@ export const generateMeetingId = (): string => {
   return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 };
 
+export const formatMeetingCode = (code: string): string => {
+  // Format meeting code with dashes for better readability (e.g., "abc123def456" -> "abc-123-def-456")
+  return code.replace(/(.{3})/g, '$1-').slice(0, -1);
+};
+
 export const validateEmail = (email: string): boolean => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);

@@ -38,7 +38,7 @@ const RegisterForm: FC = () => {
           </ul>
         </div>
       )}
-      <Button type="submit" disabled={h.apiRequest.loading}>
+      <Button type="submit" disabled={h.apiRequest?.loading}>
         Create an account
       </Button>
     </form>

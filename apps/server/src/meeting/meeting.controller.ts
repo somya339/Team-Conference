@@ -35,7 +35,7 @@ export class MeetingController {
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   getMeeting(@Param('id') id: string, @Req() req: any) {
     const userId = req.user.userId;
-    return this.meetingService.getMeeting(id, userId);
+    return this.meetingService.getMeetingByIdOrCode(id, userId);
   }
 
   @Post()

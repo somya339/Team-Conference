@@ -32,7 +32,7 @@ const LoginForm: FC = () => {
           {h.apiRequest?.errors[0]}
         </div>
       )}
-      <Button type="submit" disabled={h.apiRequest.loading}>
+      <Button type="submit" disabled={h.apiRequest?.loading}>
         Sign in
       </Button>
     </form>

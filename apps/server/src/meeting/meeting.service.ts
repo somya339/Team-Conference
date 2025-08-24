@@ -205,6 +205,51 @@ export class MeetingService {
     return meeting;
   }
 
+  async getMeetingByIdOrCode(idOrCode: string, userId: string) {
+    const meeting = await this.prisma.meeting.findFirst({
+      where: {
+        OR: [
+          { id: idOrCode },
+          { code: idOrCode },
+        ],
+      },
+      include: {
+        creator: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        participants: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!meeting) {
+      throw new NotFoundException('Meeting not found');
+    }
+
+    // Check if user is participant or creator
+    const isParticipant = meeting.participants.some(p => p.userId === userId);
+    const isCreator = meeting.createdBy === userId;
+
+    if (!isParticipant && !isCreator) {
+      throw new BadRequestException('You are not authorized to view this meeting');
+    }
+
+    return meeting;
+  }
+
   async getUserMeetings(userId: string) {
     const meetings = await this.prisma.meeting.findMany({
       where: {
