@@ -62,8 +62,11 @@ export const Dashboard: React.FC = () => {
 
   const handleJoinMeeting = async (meetingCode: string) => {
     try {
+      console.log('🎯 Attempting to join meeting with code:', meetingCode);
       await joinMeeting(meetingCode);
-      navigate(`/meeting/${meetingCode}`);
+      const targetUrl = `/meeting/${meetingCode}`;
+      console.log('🚀 Navigating to:', targetUrl);
+      navigate(targetUrl);
     } catch (error) {
       console.error('Failed to join meeting:', error);
     }

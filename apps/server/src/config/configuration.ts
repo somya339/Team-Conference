@@ -65,7 +65,7 @@ export default registerAs('app', () => ({
 
   livekit: {
     apiKey: process.env.LIVEKIT_API_KEY || 'devkey',
-    secret: process.env.LIVEKIT_SECRET || 'secret',
+    secret: process.env.LIVEKIT_API_SECRET || 'secret',
     url: process.env.LIVEKIT_URL || 'ws://localhost:7880',
   } as LiveKitConfig,
 

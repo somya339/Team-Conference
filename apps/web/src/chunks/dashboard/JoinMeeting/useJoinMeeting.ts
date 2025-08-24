@@ -14,8 +14,13 @@ export default function useJoinMeeting() {
   const navigate = useNavigate();
 
   const handleSubmit = form.handleSubmit(async (data) => {
+    console.log('🎯 JoinMeeting form submitted with code:', data.code);
     apiRequest.makeRequest(apiClient.get(`meetings/${data.code}`)).subscribe(async (res) => {
-      if (res) navigate('/meeting/' + res.meeting.code);
+      if (res) {
+        const targetUrl = '/meeting/' + res.meeting.code;
+        console.log('🚀 JoinMeeting navigating to:', targetUrl);
+        navigate(targetUrl);
+      }
     });
   });
 

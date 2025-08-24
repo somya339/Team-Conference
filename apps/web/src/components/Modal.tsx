@@ -1,10 +1,10 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState, useImperativeHandle, forwardRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { createPortal } from 'react-dom';
 
 interface ModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+  isOpen?: boolean;
+  onClose?: () => void;
   children: React.ReactNode;
   title?: string;
   size?: 'sm' | 'md' | 'lg' | 'xl';
@@ -12,15 +12,30 @@ interface ModalProps {
   closeOnEscape?: boolean;
 }
 
-export const Modal: React.FC<ModalProps> = ({
-  isOpen,
-  onClose,
+export interface ModalRef {
+  present: () => void;
+  dismiss: () => void;
+}
+
+export const Modal = forwardRef<ModalRef, ModalProps>(({
+  isOpen: controlledIsOpen,
+  onClose: controlledOnClose,
   children,
   title,
   size = 'md',
   closeOnOverlayClick = true,
   closeOnEscape = true,
-}) => {
+}, ref) => {
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
+  
+  // Use controlled state if provided, otherwise use internal state
+  const isOpen = controlledIsOpen !== undefined ? controlledIsOpen : internalIsOpen;
+  const onClose = controlledOnClose || (() => setInternalIsOpen(false));
+
+  useImperativeHandle(ref, () => ({
+    present: () => setInternalIsOpen(true),
+    dismiss: () => setInternalIsOpen(false),
+  }));
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -107,4 +122,4 @@ export const Modal: React.FC<ModalProps> = ({
 
   // Use portal to render modal at the end of body
   return createPortal(modalContent, document.body);
-};
+});

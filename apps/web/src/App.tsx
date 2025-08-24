@@ -84,6 +84,7 @@ class ErrorBoundary extends React.Component<
 
 // Protected route component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  console.log('🔒 ProtectedRoute rendering');
   const [authState, setAuthState] = React.useState<{ isAuthenticated: boolean | null; isLoading: boolean }>({
     isAuthenticated: null,
     isLoading: true
@@ -91,6 +92,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
   useEffect(() => {
     const subscription = authService.state$.subscribe(state => {
+      console.log('🔒 ProtectedRoute auth state:', state);
       setAuthState({
         isAuthenticated: state.isAuthenticated,
         isLoading: state.isLoading
@@ -99,14 +101,19 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
     return () => subscription.unsubscribe();
   }, []);
 
+  console.log('🔒 ProtectedRoute current state:', authState);
+
   if (authState.isLoading || authState.isAuthenticated === null) {
+    console.log('🔒 ProtectedRoute showing loading spinner');
     return <LoadingSpinner />;
   }
 
   if (!authState.isAuthenticated) {
+    console.log('🔒 ProtectedRoute redirecting to signin');
     return <Navigate to="/signin" replace />;
   }
 
+  console.log('🔒 ProtectedRoute rendering children');
   return <>{children}</>;
 };
 
@@ -211,7 +218,10 @@ const App: React.FC = () => {
                 path="/meeting/:meetingId"
                 element={
                   <ProtectedRoute>
-                    <Meeting />
+                    {(() => {
+                      console.log('🚀 Meeting route matched!');
+                      return <Meeting />;
+                    })()}
                   </ProtectedRoute>
                 }
               />
