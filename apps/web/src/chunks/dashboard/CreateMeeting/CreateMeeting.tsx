@@ -21,6 +21,15 @@ export const CreateMeeting: FC<CreateMeetingProps> = ({ onClose , onSubmit }) =>
 
   const handleFormSubmit = h.form.handleSubmit(async (data) => {
     try {
+      // Normalize datetime-local values to ISO (UTC) to avoid timezone drift server-side
+      if (data.startTime) {
+        const d = new Date(data.startTime);
+        if (!isNaN(d.getTime())) data.startTime = d.toISOString();
+      }
+      if (data.endTime) {
+        const d = new Date(data.endTime);
+        if (!isNaN(d.getTime())) data.endTime = d.toISOString();
+      }
       const result = await onSubmit(data);
       if (result) {
         h.setCreatedMeeting(result);
@@ -69,19 +78,7 @@ export const CreateMeeting: FC<CreateMeetingProps> = ({ onClose , onSubmit }) =>
           );
         })}
       </div>
-      {h.apiRequest?.errors?.length > 0 && (
-        <div className="rounded-md border border-danger bg-danger/20 p-2 text-sm text-danger">
-          <h3 className="font-semibold">Please fix these errors and try again</h3>
-          <ul className="mt-2 space-y-1">
-            {h.apiRequest?.errors?.map((error, index) => (
-              <li key={index} className="capitalize">
-                &bull; {error}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-      <Button type="submit" disabled={h.apiRequest?.loading}>
+      <Button type="submit">
         Create meeting
       </Button>
       </form>

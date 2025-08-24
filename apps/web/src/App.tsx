@@ -1,4 +1,5 @@
 import React, { Suspense, useEffect } from 'react';
+import type { AuthState } from './lib/auth/AuthService';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { SnackbarProvider } from 'notistack';
 import { authService } from './lib/auth/AuthService';
@@ -9,7 +10,7 @@ const SignIn = React.lazy(() => import('./pages/SignIn'));
 const SignUp = React.lazy(() => import('./pages/SignUp'));
 const Dashboard = React.lazy(() => import('./pages/Dashboard/Dashboard').then(module => ({ default: module.Dashboard })));
 const Meeting = React.lazy(() => import('./pages/Meeting/Meeting'));
-const MeetingHistory = React.lazy(() => import('./pages/MeetingHistory/MeetingHistory'));
+const MeetingHistory = React.lazy(() => import('./pages/MeetingHistory/MeetingHistory').then(m => ({ default: m.MeetingHistory })));
 
 // Loading component
 const LoadingSpinner: React.FC = () => (
@@ -30,19 +31,22 @@ const LoadingSpinner: React.FC = () => (
 // Error boundary component
 class ErrorBoundary extends React.Component<
   { children: React.ReactNode },
-  { hasError: boolean; error?: Error }
+  { hasError: boolean; error?: Error; componentStack?: string }
 > {
   constructor(props: { children: React.ReactNode }) {
     super(props);
     this.state = { hasError: false };
   }
 
-  static getDerivedStateFromError(error: Error) {
-    return { hasError: true, error };
+  static getDerivedStateFromError(error: any) {
+    const normalized = error instanceof Error ? error : new Error(typeof error === 'string' ? error : JSON.stringify(error));
+    return { hasError: true, error: normalized };
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('Error caught by boundary:', error, errorInfo);
+  componentDidCatch(error: any, errorInfo: React.ErrorInfo) {
+    const normalized = error instanceof Error ? error : new Error(typeof error === 'string' ? error : JSON.stringify(error));
+    console.error('Error caught by boundary:', normalized, errorInfo);
+    this.setState({ error: normalized, componentStack: errorInfo.componentStack });
   }
 
   render() {
@@ -56,9 +60,14 @@ class ErrorBoundary extends React.Component<
               </svg>
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-3">Something went wrong</h1>
-            <p className="text-gray-600 mb-8 leading-relaxed">
-              We're sorry, but something unexpected happened. Please try refreshing the page or contact support if the problem persists.
+            <p className="text-gray-600 mb-4 leading-relaxed">
+              {this.state.error?.message || "We're sorry, but something unexpected happened."}
             </p>
+            {this.state.componentStack && (
+              <pre className="text-left text-xs bg-gray-100 p-3 rounded-lg overflow-auto max-h-48 text-gray-700 mb-4">
+                {this.state.componentStack}
+              </pre>
+            )}
             <div className="space-y-3">
               <button
                 onClick={() => window.location.reload()}
@@ -82,57 +91,51 @@ class ErrorBoundary extends React.Component<
   }
 }
 
+// Hook to read auth state safely
+function useAuthSnapshot(): AuthState {
+  const [state, setState] = React.useState<AuthState>(authService.getSnapshot());
+  useEffect(() => {
+    return authService.subscribe(() => {
+      const next = authService.getSnapshot();
+      setState((prev) =>
+        prev.isLoading === next.isLoading && prev.isAuthenticated === next.isAuthenticated
+          ? prev
+          : next
+      );
+    });
+  }, []);
+  return state;
+}
+
 // Protected route component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   console.log('🔒 ProtectedRoute rendering');
-  const [authState, setAuthState] = React.useState<{ isAuthenticated: boolean | null; isLoading: boolean }>({
-    isAuthenticated: null,
-    isLoading: true
-  });
+  try {
+    const authState = useAuthSnapshot();
 
-  useEffect(() => {
-    const subscription = authService.state$.subscribe(state => {
-      console.log('🔒 ProtectedRoute auth state:', state);
-      setAuthState({
-        isAuthenticated: state.isAuthenticated,
-        isLoading: state.isLoading
-      });
-    });
-    return () => subscription.unsubscribe();
-  }, []);
+    console.log('🔒 ProtectedRoute current state:', authState);
 
-  console.log('🔒 ProtectedRoute current state:', authState);
+    if (authState.isLoading || (authState as any).isAuthenticated === null) {
+      console.log('🔒 ProtectedRoute showing loading spinner');
+      return <LoadingSpinner />;
+    }
 
-  if (authState.isLoading || authState.isAuthenticated === null) {
-    console.log('🔒 ProtectedRoute showing loading spinner');
-    return <LoadingSpinner />;
-  }
+    if (!authState.isAuthenticated) {
+      console.log('🔒 ProtectedRoute redirecting to signin');
+      return <Navigate to="/signin" replace />;
+    }
 
-  if (!authState.isAuthenticated) {
-    console.log('🔒 ProtectedRoute redirecting to signin');
+    console.log('🔒 ProtectedRoute rendering children');
+    return <>{children}</>;
+  } catch (err) {
+    console.error('🚨 ProtectedRoute crashed:', err);
     return <Navigate to="/signin" replace />;
   }
-
-  console.log('🔒 ProtectedRoute rendering children');
-  return <>{children}</>;
 };
 
 // Public route component (redirects if already authenticated)
 const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [authState, setAuthState] = React.useState<{ isAuthenticated: boolean | null; isLoading: boolean }>({
-    isAuthenticated: null,
-    isLoading: true
-  });
-
-  useEffect(() => {
-    const subscription = authService.state$.subscribe(state => {
-      setAuthState({
-        isAuthenticated: state.isAuthenticated,
-        isLoading: state.isLoading
-      });
-    });
-    return () => subscription.unsubscribe();
-  }, []);
+  const authState = useAuthSnapshot();
 
   if (authState.isLoading || authState.isAuthenticated === null) {
     return <LoadingSpinner />;
@@ -167,10 +170,23 @@ const App: React.FC = () => {
       console.error('Unhandled promise rejection:', event.reason);
     };
 
+    // Capture window errors (including errors thrown from React rendering)
+    const handleWindowError = (event: ErrorEvent) => {
+      console.error('Window error:', {
+        message: event.message,
+        filename: event.filename,
+        lineno: event.lineno,
+        colno: event.colno,
+        error: event.error,
+      });
+    };
+
     window.addEventListener('unhandledrejection', handleUnhandledRejection);
+    window.addEventListener('error', handleWindowError);
 
     return () => {
       window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+      window.removeEventListener('error', handleWindowError);
     };
   }, []);
 
@@ -218,10 +234,7 @@ const App: React.FC = () => {
                 path="/meeting/:meetingId"
                 element={
                   <ProtectedRoute>
-                    {(() => {
-                      console.log('🚀 Meeting route matched!');
-                      return <Meeting />;
-                    })()}
+                    <Meeting />
                   </ProtectedRoute>
                 }
               />

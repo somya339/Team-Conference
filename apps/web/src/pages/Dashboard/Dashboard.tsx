@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Button } from '../../components/Button/Button';
@@ -25,12 +25,7 @@ export const Dashboard: React.FC = () => {
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'upcoming' | 'past'>('upcoming');
 
-  // Remove this useEffect - authentication is handled by ProtectedRoute in App.tsx
-  useEffect(() => {
-    if (!user) {
-      navigate('/signin');
-    }
-  }, [user]);
+  // Authentication redirects are handled by ProtectedRoute in App.tsx
 
   const upcomingMeetings = meetings?.filter((meeting) => {
     // If meeting has a startTime, use it to determine if it's upcoming

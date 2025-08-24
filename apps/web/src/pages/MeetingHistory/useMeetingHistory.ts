@@ -1,8 +1,7 @@
-import { useState } from 'react';
-import { apiClient } from '@/lib/api/axios.ts';
-import { useApiRequest } from '@/lib/api/useApiRequest.ts';
-import { Meeting } from '@/lib/common.types.ts';
-import { ModalRef } from '@/components/Modal.tsx';
+import { useState, useCallback, useEffect } from 'react';
+import { useGet } from '@/lib/api/useApiRequest';
+import { Meeting } from '@/lib/common.types';
+import { ModalRef } from '@/components/Modal';
 import { useRef } from 'react';
 
 export type MeetingSubmission = {
@@ -20,35 +19,49 @@ export type MeetingSubmission = {
 
 export default function useMeetingHistory() {
   const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
-  const [submissions, setSubmissions] = useState<MeetingSubmission[]>([]);
-  const meetingsRequest = useApiRequest<Meeting[]>();
-  const submissionsRequest = useApiRequest<MeetingSubmission[]>();
   const submissionsModalRef = useRef<ModalRef>();
 
-  const fetchMeetings = () => {
-    meetingsRequest.makeRequest(apiClient.get('meetings/created')).subscribe();
-  };
+  // Fetch user's meetings
+  const {
+    data: meetings = [],
+    loading: loadingMeetings,
+    error: meetingsError,
+    refetch: refetchMeetings
+  } = useGet<Meeting[]>('meetings');
 
-  const viewSubmissions = async (meeting: Meeting) => {
+  // Fetch submissions for a meeting
+  const submissionsUrl = selectedMeeting ? `submissions/meeting/${selectedMeeting.id}` : '';
+  const {
+    data: meetingSubmissions = [],
+    loading: loadingSubmissions,
+    error: submissionsError,
+    refetch: refetchSubmissions
+  } = useGet<MeetingSubmission[]>(submissionsUrl);
+
+  const viewSubmissions = useCallback((meeting: Meeting) => {
     setSelectedMeeting(meeting);
-    submissionsRequest
-      .makeRequest(apiClient.get(`submissions/meeting/${meeting.id}`))
-      .subscribe((data) => {
-        if (data) {
-          setSubmissions(data);
-          submissionsModalRef.current?.present();
-        }
+    // Show submissions modal will be triggered by the useEffect below
+  }, []);
+
+  // Update submissions when selected meeting changes and show modal
+  useEffect(() => {
+    if (selectedMeeting) {
+      refetchSubmissions().then(() => {
+        submissionsModalRef.current?.present();
       });
-  };
+    }
+  }, [selectedMeeting, refetchSubmissions]);
 
   return {
-    meetings: meetingsRequest.data || [],
-    isLoading: meetingsRequest.loading,
-    errors: meetingsRequest.errors,
-    fetchMeetings,
+    meetings,
+    loading: loadingMeetings,
+    error: meetingsError,
+    fetchMeetings: refetchMeetings,
+    submissions: meetingSubmissions,
+    submissionsLoading: loadingSubmissions,
+    submissionsError,
     viewSubmissions,
     selectedMeeting,
-    submissions,
     submissionsModalRef,
   };
 }

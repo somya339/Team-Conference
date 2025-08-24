@@ -4,12 +4,12 @@ import { Icon } from '@iconify/react';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
 
-import Button from '@/components/Button/Button.tsx';
-import Modal from '@/components/Modal.tsx';
-import AppLogo from '@/components/AppLogo/AppLogo.tsx';
+import { Button } from '@/components/Button/Button';
+import { Modal } from '@/components/Modal';
+import { AppLogo } from '@/components/AppLogo/AppLogo';
 import useMeetingHistory from './useMeetingHistory.ts';
 
-const MeetingHistory: FC = () => {
+export const MeetingHistory: FC = () => {
   const h = useMeetingHistory();
   const navigate = useNavigate();
 
@@ -78,18 +78,18 @@ const MeetingHistory: FC = () => {
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200 bg-gray-50/50">
               <h3 className="text-lg font-semibold text-gray-900">
-                Past Meetings ({h.meetings.length})
+                Past Meetings ({h?.meetings?.length})
               </h3>
             </div>
 
             <div className="p-6">
-              {h.isLoading ? (
+              {h.loading ? (
                 <div className="text-center py-12">
                   <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">Loading meetings</h3>
                   <p className="text-gray-600">Please wait while we fetch your meeting history...</p>
                 </div>
-              ) : h.meetings.length === 0 ? (
+              ) : h?.meetings?.length === 0 ? (
                 <div className="text-center py-12">
                   <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -107,7 +107,7 @@ const MeetingHistory: FC = () => {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {h.meetings.map((meeting, index) => (
+                  {h?.meetings?.map((meeting, index) => (
                     <motion.div
                       key={meeting.id}
                       initial={{ opacity: 0, y: 20 }}
@@ -176,7 +176,7 @@ const MeetingHistory: FC = () => {
             </div>
             
             <div className="max-h-[60vh] space-y-4 overflow-y-auto">
-              {h.submissions.length === 0 ? (
+              {h?.submissions?.length === 0 ? (
                 <div className="text-center py-8">
                   <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -187,7 +187,7 @@ const MeetingHistory: FC = () => {
                   <p className="text-gray-600">Participants haven't submitted any materials for this meeting.</p>
                 </div>
               ) : (
-                h.submissions.map((submission) => (
+                h?.submissions?.map((submission) => (
                   <div
                     key={submission.id}
                     className="border border-gray-200 rounded-xl p-6 bg-gray-50/50"
@@ -228,5 +228,3 @@ const MeetingHistory: FC = () => {
     </div>
   );
 };
-
-export default MeetingHistory;

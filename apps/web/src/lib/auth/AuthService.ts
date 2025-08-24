@@ -50,7 +50,38 @@ class AuthService {
     error: null,
   });
 
+  // Stable observables (initialized once)
+  public readonly state$: Observable<AuthState>;
+  public readonly user$: Observable<User | null>;
+  public readonly token$: Observable<string | null>;
+  public readonly isAuthenticated$: Observable<boolean>;
+  public readonly isLoading$: Observable<boolean>;
+  public readonly error$: Observable<string | null>;
+
   constructor() {
+    // Initialize stable observables once
+    this.state$ = this._state$.asObservable();
+    this.user$ = this._state$.pipe(
+      map(state => state.user),
+      distinctUntilChanged()
+    );
+    this.token$ = this._state$.pipe(
+      map(state => state.token),
+      distinctUntilChanged()
+    );
+    this.isAuthenticated$ = this._state$.pipe(
+      map(state => state.isAuthenticated),
+      distinctUntilChanged()
+    );
+    this.isLoading$ = this._state$.pipe(
+      map(state => state.isLoading),
+      distinctUntilChanged()
+    );
+    this.error$ = this._state$.pipe(
+      map(state => state.error),
+      distinctUntilChanged()
+    );
+
     this.initializeAuth();
   }
 
@@ -96,45 +127,17 @@ class AuthService {
     this._state$.next(newState);
   }
 
-  // Observable getters
-  get state$(): Observable<AuthState> {
-    return this._state$.asObservable();
+  // For useSyncExternalStore consumers
+  subscribe(listener: () => void): () => void {
+    const sub = this._state$.subscribe(() => listener());
+    return () => sub.unsubscribe();
   }
 
-  get user$(): Observable<User | null> {
-    return this._state$.pipe(
-      map(state => state.user),
-      distinctUntilChanged()
-    );
+  getSnapshot(): AuthState {
+    return this._state$.value;
   }
 
-  get token$(): Observable<string | null> {
-    return this._state$.pipe(
-      map(state => state.token),
-      distinctUntilChanged()
-    );
-  }
-
-  get isAuthenticated$(): Observable<boolean> {
-    return this._state$.pipe(
-      map(state => state.isAuthenticated),
-      distinctUntilChanged()
-    );
-  }
-
-  get isLoading$(): Observable<boolean> {
-    return this._state$.pipe(
-      map(state => state.isLoading),
-      distinctUntilChanged()
-    );
-  }
-
-  get error$(): Observable<string | null> {
-    return this._state$.pipe(
-      map(state => state.error),
-      distinctUntilChanged()
-    );
-  }
+  // Observable getters removed in favor of stable readonly fields above
 
   // Synchronous getters
   get currentUser(): User | null {

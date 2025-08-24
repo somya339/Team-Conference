@@ -44,6 +44,7 @@ function Meeting() {
   console.log('📋 Meeting ID from params:', code);
   const [meeting, setMeeting] = useState<JoinMeetingRes['meeting']>();
   const [token, setToken] = useState<string>();
+  const [joined, setJoined] = useState(false);
   const user = useRxState(authService.user$);
   const room = useMemo(() => new Room(), []);
   const navigate = useNavigate();
@@ -57,11 +58,7 @@ function Meeting() {
       if (!code) return;
       
       try {
-        // First fetch meeting details
-        const meetingResponse = await apiClient.get(`/meetings/${code}`);
-        setMeeting(meetingResponse.data);
-        
-        // Then join the meeting to get LiveKit token
+        // Join the meeting (returns meeting, token, roomUrl)
         console.log('🎫 Requesting LiveKit token for meeting:', code);
         const joinResponse = await apiClient.post('/meetings/join', { meetingId: code });
         console.log('🎫 Received token response:', joinResponse.data);
@@ -76,7 +73,9 @@ function Meeting() {
           console.error('Failed to decode token:', e);
         }
         
-        setToken(joinResponse.data.token);
+        const { token: lkToken, roomUrl, meeting: joinedMeeting } = joinResponse.data as { token: string; roomUrl?: string; meeting: Meeting };
+        setToken(lkToken);
+        setMeeting({ ...joinedMeeting, roomUrl: roomUrl || joinedMeeting.roomUrl });
       } catch (error) {
         console.error('Failed to join meeting:', error);
         navigate('/dashboard');
@@ -88,11 +87,19 @@ function Meeting() {
 
   const leaveRoom = async () => {
     try {
-      await apiClient.put('/meetings/leave', { meetingId: code });
-    } catch (error) {
-      console.error('Failed to leave meeting:', error);
+      if (joined) {
+        await apiClient.put('/meetings/leave', { meetingId: code });
+      }
+    } catch (error: any) {
+      // Ignore 404: not a participant (e.g., join failed/cancelled)
+      const status = error?.response?.status;
+      if (status !== 404) {
+        console.error('Failed to leave meeting:', error);
+      }
+    } finally {
+      setJoined(false);
+      navigate('/dashboard');
     }
-    navigate('/dashboard');
   };
 
   const handleSubmit = async (files: File[]) => {
@@ -183,7 +190,7 @@ function Meeting() {
             video={true}
             audio={true}
             token={token}
-            serverUrl={meeting.roomUrl || import.meta.env.VITE_LIVEKIT_URL || 'wss://conference-5if72c2k.livekit.cloud'}
+            serverUrl={meeting.roomUrl}
             data-lk-theme="default"
             style={{ height: '100vh' }}
             onDisconnected={leaveRoom}
@@ -193,14 +200,16 @@ function Meeting() {
                 message: error.message,
                 name: error.name,
                 stack: error.stack,
-                serverUrl: meeting.roomUrl || import.meta.env.VITE_LIVEKIT_URL || 'wss://conference-5if72c2k.livekit.cloud',
+                serverUrl: meeting.roomUrl,
                 roomName: room,
                 tokenValid: !!token
               });
+              setJoined(false);
               enqueueSnackbar('Failed to connect to meeting room. Please check your connection.', { variant: 'error' });
             }}
             onConnected={() => {
               console.log('✅ Successfully connected to LiveKit room');
+              setJoined(true);
             }}
           >
             <div className="relative h-full">
@@ -211,6 +220,8 @@ function Meeting() {
                   <ControlBar />
                 </div>
               </div>
+              {/* Chat Component inside LiveKitRoom */}
+              <Chat isOpen={isChatOpen} onToggle={() => setIsChatOpen(!isChatOpen)} />
             </div>
           </LiveKitRoom>
         </div>
@@ -223,9 +234,6 @@ function Meeting() {
           <Icon icon="solar:document-check-outline" className="size-6 text-white" />
         </button>
       </div>
-      
-      {/* Chat Component */}
-      <Chat isOpen={isChatOpen} onToggle={() => setIsChatOpen(!isChatOpen)} />
       <Modal ref={submitModalRef}>
         <SubmissionPortal 
           onSubmit={handleSubmit} 
