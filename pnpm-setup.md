@@ -1,6 +1,6 @@
 # PNPM Setup Guide
 
-This guide explains how to set up and use pnpm with the Stellar Conferencing project.
+This guide explains how to set up and use pnpm with the NexusMeet project.
 
 ## What is PNPM?
 
@@ -83,7 +83,7 @@ pnpm test         # Run tests
 The project uses pnpm workspaces with the following structure:
 
 ```
-stellar-conferencing/
+nexusmeet/
 ├── apps/
 │   ├── web/          # React frontend
 │   └── server/       # NestJS backend
@@ -105,12 +105,12 @@ stellar-conferencing/
 pnpm add <package-name>
 
 # Add to specific app
-pnpm --filter stellar add <package-name>
-pnpm --filter stellar-server add <package-name>
+pnpm --filter nexusmeet-web add <package-name>
+pnpm --filter nexusmeet-server add <package-name>
 
 # Add dev dependencies
 pnpm add -D <package-name>
-pnpm --filter stellar add -D <package-name>
+pnpm --filter nexusmeet-web add -D <package-name>
 ```
 
 ### Removing Dependencies
@@ -120,7 +120,7 @@ pnpm --filter stellar add -D <package-name>
 pnpm remove <package-name>
 
 # Remove from specific app
-pnpm --filter stellar remove <package-name>
+pnpm --filter nexusmeet-web remove <package-name>
 ```
 
 ### Running Scripts
@@ -130,7 +130,7 @@ pnpm --filter stellar remove <package-name>
 pnpm --recursive <script-name>
 
 # Run script in specific package
-pnpm --filter stellar <script-name>
+pnpm --filter nexusmeet-web <script-name>
 ```
 
 ## Configuration Files

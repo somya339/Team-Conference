@@ -1,6 +1,6 @@
-# Stellar - Video Conferencing Application
+# NexusMeet - Video Conferencing Web App
 
-Stellar is a high-performance video conferencing application built on [Livekit](https://livekit.io/). It leverages modern web technologies to provide a smooth real-time communication experience.
+NexusMeet is a high-performance video conferencing application built on [Livekit](https://livekit.io/). It leverages modern web technologies to provide a smooth real-time communication experience.
 
 ## Tech Stack
 - **Frontend**: React (Vite)

@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: 'stellar-server',
+      name: 'nexusmeet-server',
       script: 'dist/main.js',
       instances: 'max',
       autorestart: true,

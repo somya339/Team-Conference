@@ -1,6 +1,6 @@
 # Environment Variables Documentation
 
-This document lists all environment variables used in the Stellar Conferencing application.
+This document lists all environment variables used in the NexusMeet application.
 
 ## Backend Environment Variables
 
@@ -54,7 +54,7 @@ EMAIL_PORT=587
 EMAIL_SECURE=false
 EMAIL_USER=your-email@gmail.com
 EMAIL_PASS=your-email-password
-EMAIL_FROM=noreply@stellar-conferencing.com
+EMAIL_FROM=noreply@nexusmeet.com
 ```
 
 ### Cloudinary Configuration (optional)
@@ -80,7 +80,7 @@ VITE_LIVEKIT_URL=ws://localhost:7880
 
 ### Application Configuration
 ```env
-VITE_APP_NAME=Stellar Conferencing
+VITE_APP_NAME=NexusMeet
 VITE_APP_VERSION=1.0.0
 ```
 
@@ -147,7 +147,7 @@ VITE_LOG_LEVEL=info
 | `EMAIL_SECURE` | Use secure SMTP connection | `false` | No |
 | `EMAIL_USER` | SMTP username | - | No |
 | `EMAIL_PASS` | SMTP password | - | No |
-| `EMAIL_FROM` | From email address | `noreply@stellar-conferencing.com` | No |
+| `EMAIL_FROM` | From email address | `noreply@nexusmeet.com` | No |
 
 ### Frontend Variables
 
@@ -155,7 +155,7 @@ VITE_LOG_LEVEL=info
 |----------|-------------|---------|----------|
 | `VITE_SERVER_URL` | Backend API URL | `http://localhost:3000` | Yes |
 | `VITE_LIVEKIT_URL` | LiveKit WebSocket URL | `ws://localhost:7880` | Yes |
-| `VITE_APP_NAME` | Application name | `Stellar Conferencing` | No |
+| `VITE_APP_NAME` | Application name | `NexusMeet` | No |
 | `VITE_APP_VERSION` | Application version | `1.0.0` | No |
 | `VITE_ENABLE_RECORDING` | Enable meeting recording | `true` | No |
 | `VITE_ENABLE_SCREEN_SHARING` | Enable screen sharing | `true` | No |

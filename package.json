@@ -1,27 +1,39 @@
 {
-  "name": "stellar-v2",
+  "name": "nexusmeet",
+  "version": "1.0.0",
+  "description": "NexusMeet - Modern video conferencing application",
   "private": true,
   "scripts": {
-    "build": "turbo run build --parallel",
-    "dev": "turbo run dev --parallel",
+    "build:web": "turbo run build --filter=nexusmeet-web",
+    "build:server": "turbo run build --filter=nexusmeet-server",
+    "dev:web": "turbo run dev --filter=nexusmeet-web",
+    "dev:server": "turbo run dev --filter=nexusmeet-server",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types"
   },
+  "keywords": ["video-conferencing", "webrtc", "react", "nest", "real-time"],
+  "bugs": {
+    "url": "https://github.com/your-username/nexusmeet/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/nexusmeet.git"
+  },
+  "author": "Your Name <your.email@example.com>",
+  "license": "MIT",
+  "homepage": "https://nexusmeet.app",
   "devDependencies": {
     "prettier": "^3.5.0",
     "turbo": "^2.4.2",
     "typescript": "5.7.3"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
   },
-  "packageManager": "pnpm@8.15.0",
   "workspaces": [
     "apps/*",
     "packages/*"
-  ],
-  "dependencies": {
-    "react-dropzone": "^14.3.8"
-  }
+  ]
 }

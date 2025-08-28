@@ -1,9 +1,22 @@
 {
-  "name": "stellar",
+  "name": "nexusmeet-web",
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "description": "NexusMeet Web - Frontend for video conferencing application",
+  "author": "Your Name <your.email@example.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/nexusmeet.git"
+  },
+  "homepage": "https://nexusmeet.app",
+  "bugs": {
+    "url": "https://github.com/your-username/nexusmeet/issues"
+  },
   "scripts": {
+    "test": "vitest",
+    "test:ci": "vitest run --coverage",
     "dev": "vite --host",
     "build": "tsc --noEmit && vite build",
     "build:prod": "vite build --mode production",
@@ -11,7 +24,8 @@
     "preview:prod": "vite preview --port 4173 --host",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build",
+    "build-storybook": "storybook build -o dist/storybook",
+    "build:ci": "vite build --mode production",
     "chromatic": "npx chromatic --project-token=chpt_7272934ca6ebfa5",
     "start": "vite --host",
     "start:prod": "vite preview --port 4173 --host"

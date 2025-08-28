@@ -1,20 +1,38 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": ["**/.env.*local"],
-  "pipeline": {
+  "globalEnv": [
+    "NODE_ENV",
+    "NEXT_PUBLIC_APP_ENV",
+    "NEXT_PUBLIC_API_URL"
+  ],
+  "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
     },
     "lint": {
-      "dependsOn": ["^lint"]
+      "dependsOn": ["^lint"],
+      "outputs": [],
+      "persistent": true,
+      "env": ["NODE_ENV"]
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "env": ["NODE_ENV"]
+    },
+    "test": {
+      "dependsOn": ["build"],
+      "outputs": ["coverage/"],
+      "inputs": ["src/**/*.ts*", "src/**/*.js*", "test/**/*.*", "jest.config.*"]
     },
     "check-types": {
-      "dependsOn": ["^check-types"]
+      "dependsOn": ["^check-types"],
+      "outputs": []
+    },
+    "clean": {
+      "cache": false
     }
   }
 }

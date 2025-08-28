@@ -1,6 +1,6 @@
-# Stellar Conferencing - Deployment Guide
+# NexusMeet - Deployment Guide
 
-This guide provides instructions for deploying the Stellar Conferencing application to a production environment.
+This guide provides instructions for deploying the NexusMeet application to a production environment.
 
 ## Prerequisites
 
@@ -8,6 +8,14 @@ This guide provides instructions for deploying the Stellar Conferencing applicat
 - Root access to the server
 - Domain name with DNS configured
 - SSL certificates (Let's Encrypt recommended)
+
+## Security Considerations
+
+1. **Firewall**: Ensure only necessary ports are open (80, 443, 7881 for LiveKit)
+2. **Updates**: Keep the system and dependencies updated
+3. **Secrets**: Store sensitive information in environment variables, not in version control
+4. **Rate Limiting**: Implement rate limiting in Nginx for API endpoints
+5. **Monitoring**: Set up monitoring and alerts for the application
 
 ## Server Setup
 
@@ -36,24 +44,24 @@ This guide provides instructions for deploying the Stellar Conferencing applicat
 
 2. **Create a database and user**
    ```bash
-   sudo -u postgres psql -c "CREATE DATABASE stellar_conferencing;"
-   sudo -u postgres psql -c "CREATE USER stellar WITH PASSWORD 'your_secure_password';"
-   sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE stellar_conferencing TO stellar;"
+   sudo -u postgres psql -c "CREATE DATABASE nexusmeet;"
+   sudo -u postgres psql -c "CREATE USER nexusmeet WITH PASSWORD 'your_secure_password';"
+   sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE nexusmeet TO nexusmeet;"
    ```
 
 ## Application Deployment
 
 ### 1. Clone the repository
 ```bash
-sudo mkdir -p /var/www/stellar-conferencing
-sudo chown -R $USER:$USER /var/www/stellar-conferencing
-cd /var/www/stellar-conferencing
-git clone https://your-git-repo.com/your-username/stellar-conferencing.git .
+sudo mkdir -p /var/www/nexusmeet
+sudo chown -R $USER:$USER /var/www/nexusmeet
+cd /var/www/nexusmeet
+git clone https://github.com/your-username/nexusmeet.git .
 ```
 
 ### 2. Deploy the Server
 ```bash
-cd /var/www/stellar-conferencing/apps/server
+cd /var/www/nexusmeet/apps/server
 cp .env.example .env.production
 # Edit .env.production with your configuration
 pnpm install
@@ -67,7 +75,7 @@ pm2 startup
 
 ### 3. Deploy the Web Client
 ```bash
-cd /var/www/stellar-conferencing/apps/web
+cd /var/www/nexusmeet/apps/web
 cp .env.example .env.production
 # Edit .env.production with your configuration
 pnpm install
@@ -87,8 +95,8 @@ sudo chown -R www-data:www-data /var/www/html
 
 2. **Copy the Nginx configuration**
    ```bash
-   sudo cp deploy/nginx/stellar-conferencing.conf /etc/nginx/sites-available/
-   sudo ln -s /etc/nginx/sites-available/stellar-conferencing.conf /etc/nginx/sites-enabled/
+   sudo cp deploy/nginx/nexusmeet.conf /etc/nginx/sites-available/
+   sudo ln -s /etc/nginx/sites-available/nexusmeet.conf /etc/nginx/sites-enabled/
    sudo nginx -t
    sudo systemctl restart nginx
    ```
@@ -125,19 +133,24 @@ sudo certbot --nginx -d yourdomain.com -d www.yourdomain.com
 
 ## Maintenance
 
-### Updating the application
-```bash
-# Pull the latest changes
-cd /var/www/stellar-conferencing
-git pull
+### Updating the Application
 
-# Update server
+1. Pull the latest changes:
+   ```bash
+   cd /var/www/nexusmeet
+   git pull origin main
+   ```
+
+2. Update server
+```bash
 cd apps/server
 pnpm install
 pnpm build
 pm2 restart ecosystem.config.js --env production
+```
 
-# Update web client
+3. Update web client
+```bash
 cd ../web
 pnpm install
 pnpm build:prod
@@ -146,24 +159,24 @@ sudo chown -R www-data:www-data /var/www/html
 ```
 
 ### Monitoring
-- Check PM2 status: `pm2 status`
-- Check Nginx logs: `sudo tail -f /var/log/nginx/error.log`
-- Check application logs: `pm2 logs stellar-server`
+
+- Check server logs:
+  ```bash
+  journalctl -u nexusmeet-server -f
+  ```
+- Check application logs: `pm2 logs nexusmeet-server`
 
 ## Troubleshooting
 
-### Common Issues
-
-1. **Port already in use**
+### Server fails to start
+1. Check the logs:
    ```bash
-   sudo lsof -i :3000  # Check what's using port 3000
-   sudo kill -9 <PID>  # Replace <PID> with the process ID
+   journalctl -u nexusmeet-server -n 50 --no-pager
    ```
-
 2. **Permission issues**
    ```bash
-   sudo chown -R $USER:$USER /var/www/stellar-conferencing
-   sudo chmod -R 755 /var/www/stellar-conferencing
+   sudo chown -R $USER:$USER /var/www/nexusmeet
+   sudo chmod -R 755 /var/www/nexusmeet
    ```
 
 3. **Nginx configuration test**

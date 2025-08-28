@@ -1,51 +1,58 @@
-# Stellar Conferencing - Production Deployment Guide
+# NexusMeet - Production Deployment Guide
 
-This guide provides instructions for deploying the Stellar Conferencing application to a production environment.
+This guide provides instructions for deploying the NexusMeet video conferencing application to a production environment.
 
-## Prerequisites
+## 🚀 Prerequisites
 
-- Node.js 18+ and pnpm installed
-- PostgreSQL database
-- LiveKit server
-- Domain name with SSL certificates
-- Server with at least 2GB RAM and 2 vCPUs
+- **Node.js** 18+ (LTS recommended)
+- **pnpm** 8.x (package manager)
+- **PostgreSQL** 14+ database
+- **LiveKit** server (self-hosted or cloud)
+- Domain name with SSL certificates (Let's Encrypt recommended)
+- Server with at least:
+  - 2 vCPUs
+  - 4GB RAM (8GB recommended for production)
+  - 20GB SSD storage
 
 ## Environment Variables
+VITE_LIVEKIT_URL=wss://livekit.nexusmeet.app
 
-### Web Application
-
-Create a `.env.production` file in the `apps/web` directory:
-
-```bash
-VITE_API_URL=https://api.yourdomain.com/api
-VITE_LIVEKIT_URL=wss://livekit.yourdomain.com
+# Application
 NODE_ENV=production
-```
+NEXT_PUBLIC_APP_ENV=production
+NEXT_PUBLIC_APP_NAME="NexusMeet"
+NEXT_PUBLIC_APP_URL=https://nexusmeet.app
 
-### Server Application
+# Analytics (optional)
+NEXT_PUBLIC_GA_MEASUREMENT_ID=G-XXXXXXXXXX
+NEXT_PUBLIC_SENTRY_DSN=your-sentry-dsn
 
-Create a `.env.production` file in the `apps/server` directory:
+### Server Application (`apps/server/.env.production`)
 
 ```bash
-# Database
-DATABASE_URL=postgresql://user:password@host:port/dbname
+# ===== Database =====
+DATABASE_URL=postgresql://user:password@host:5432/nexusmeet?schema=public
 
-# JWT
-JWT_SECRET=your-secure-jwt-secret-here
-JWT_REFRESH_SECRET=your-secure-refresh-secret-here
+# ===== Authentication =====
+JWT_SECRET=generate-a-secure-secret-here
+JWT_REFRESH_SECRET=generate-a-secure-refresh-secret-here
 JWT_EXPIRES_IN=15m
 JWT_REFRESH_EXPIRES_IN=7d
 
-# LiveKit
+# ===== LiveKit Configuration =====
 LIVEKIT_API_KEY=your-livekit-api-key
 LIVEKIT_SECRET=your-livekit-secret
-LIVEKIT_URL=wss://livekit.yourdomain.com
+LIVEKIT_URL=wss://livekit.nexusmeet.app
 
-# App
+# ===== Application Settings =====
 NODE_ENV=production
 PORT=3000
-FRONTEND_URL=https://yourdomain.com
-CORS_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
+FRONTEND_URL=https://nexusmeet.app
+CORS_ORIGINS=https://nexusmeet.app,https://www.nexusmeet.app
+
+# ===== Rate Limiting =====
+RATE_LIMIT_WINDOW_MS=900000  # 15 minutes
+RATE_LIMIT_MAX=100  # Max requests per window per IP
 
 # Security
 BCRYPT_ROUNDS=10

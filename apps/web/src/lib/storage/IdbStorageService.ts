@@ -1,6 +1,6 @@
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
 
-interface StellarDB extends DBSchema {
+interface NexusMeetDB extends DBSchema {
   users: {
     key: string;
     value: any;
@@ -21,13 +21,13 @@ interface StellarDB extends DBSchema {
 }
 
 class IdbStorageService {
-  private db: IDBPDatabase<StellarDB> | null = null;
-  private readonly dbName = 'stellar-conferencing';
+  private db: IDBPDatabase<NexusMeetDB> | null = null;
+  private readonly dbName = 'nexusmeet';
   private readonly version = 1;
 
   async init(): Promise<void> {
     try {
-      this.db = await openDB<StellarDB>(this.dbName, this.version, {
+      this.db = await openDB<NexusMeetDB>(this.dbName, this.version, {
         upgrade(db) {
           // Users store
           if (!db.objectStoreNames.contains('users')) {
@@ -57,7 +57,7 @@ class IdbStorageService {
     }
   }
 
-  private async ensureDB(): Promise<IDBPDatabase<StellarDB>> {
+  private async ensureDB(): Promise<IDBPDatabase<NexusMeetDB>> {
     if (!this.db) {
       await this.init();
     }

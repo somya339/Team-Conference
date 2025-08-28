@@ -4,11 +4,11 @@
 set -e
 
 # Configuration
-APP_NAME="stellar-conferencing"
+APP_NAME="nexusmeet"
 APP_DIR="/var/www/$APP_NAME"
-WEB_DIR="$APP_DIR/web"
-GIT_REPO="https://your-git-repo.com/your-username/$APP_NAME.git"
+GIT_REPO="https://github.com/your-username/nexusmeet.git"
 BRANCH="main"
+NGINX_CONF="nexusmeet.conf"
 NODE_ENV="production"
 
 # Colors for output

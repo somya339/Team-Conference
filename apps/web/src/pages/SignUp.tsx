@@ -24,7 +24,7 @@ const SignUp: FC = () => {
               Create your account
             </h2>
             <p className="text-gray-600">
-              Join thousands of professionals using Stellar
+              Join thousands of professionals using NexusMeet
             </p>
           </div>
 

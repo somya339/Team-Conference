@@ -136,7 +136,7 @@ function Meeting() {
             <div className="absolute inset-0 w-20 h-20 border-4 border-blue-300/20 border-b-blue-400 rounded-full animate-spin mx-auto" style={{animationDirection: 'reverse', animationDuration: '1.5s'}}></div>
           </div>
           <div className="space-y-2">
-            <h2 className="text-xl font-semibold text-white">Stellar Conferencing</h2>
+            <h2 className="text-xl font-semibold text-white">NexusMeet</h2>
             <p className="text-purple-200">
               {!meeting ? 'Loading meeting details...' : 'Connecting to meeting room...'}
             </p>

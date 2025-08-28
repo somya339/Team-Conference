@@ -1,6 +1,6 @@
-# Stellar - Video Conferencing Application
+# NexusMeet - Video Conferencing Application
 
-Stellar is a high-performance video conferencing application built on [Livekit](https://livekit.io/). It leverages modern web technologies to provide a smooth real-time communication experience.
+NexusMeet is a modern, open-source video conferencing application built with React, NestJS, and WebRTC. It leverages modern web technologies to provide a smooth real-time communication experience.
 
 ## Tech Stack
 
@@ -21,12 +21,12 @@ Stellar is a high-performance video conferencing application built on [Livekit](
 - **Prisma**
 
 ## Live Demo
-- **Live Site**: [stellar-conferencing.vercel.app](https://stellar-conferencing.vercel.app/)
+- **Live Site**: [nexusmeet.vercel.app](https://nexusmeet.vercel.app/)
 - **Storybook**: [Chromatic Deployment](https://67b58226c871a884bc89a90b-oyibqdsbtl.chromatic.com)
-- **Swagger API Docs**: [stellar-conferencing.onrender.com/api](https://stellar-conferencing.onrender.com/api)
+- **Swagger API Docs**: [nexusmeet.onrender.com/api](https://nexusmeet.onrender.com/api)
 
 ## Repository
-- **GitHub**: [ore-codes/stellar-conferencing](https://github.com/ore-codes/stellar-conferencing)
+- **GitHub**: [your-username/nexusmeet](https://github.com/your-username/nexusmeet)
 
 ---
 
@@ -42,13 +42,13 @@ Ensure you have the following installed:
 
 Clone the repository:
 ```sh
-git clone https://github.com/ore-codes/stellar-conferencing.git
-cd stellar-conferencing
+git clone https://github.com/your-username/nexusmeet.git
+cd nexusmeet
 ```
 
 Install dependencies:
 ```sh
-pnpm install
+pnpm --filter nexusmeet-web install
 ```
 
 ### Configure Environment Variables
@@ -70,7 +70,8 @@ VITE_LIVEKIT_URL=<your-livekit-ws-url>
 ### Start the Development Servers
 Run both frontend and backend in parallel:
 ```sh
-pnpm dev
+pnpm --filter nexusmeet-web dev
+pnpm --filter nexusmeet-server start:dev
 ```
 
 The frontend should now be running at `http://localhost:5173/` and the backend will be running at `http://localhost:3000/`.
@@ -102,7 +103,7 @@ This will upload your Storybook to Chromatic for visual testing.
 ---
 
 ## 📜 License
-This project is licensed under the **MIT License**.
+NexusMeet is licensed under the MIT License. See [LICENSE](LICENSE) for more information.
 
 ---
 
@@ -130,7 +131,7 @@ For inquiries or support, reach out to [@ore-codes](https://github.com/ore-codes
 - RxJS for reactive state management
 
 ### Recent Development History
-This project has been actively developed with a focus on:
+NexusMeet is developed by [Your Name]. Focus on:
 - **Enhanced UI/UX**: Modern design system with Tailwind CSS and custom animations
 - **Better Error Handling**: Comprehensive error boundaries and user-friendly error messages
 - **Performance Improvements**: Code splitting, lazy loading, and optimized builds
@@ -148,5 +149,5 @@ This project has been actively developed with a focus on:
 - ✅ API documentation with Swagger
 - ✅ Development and production configurations
 
-Enjoy building with **Stellar**! 🚀
+Enjoy building with **NexusMeet**! 🚀
 

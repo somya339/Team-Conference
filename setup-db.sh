@@ -3,7 +3,7 @@
 # Exit on error
 set -e
 
-echo "🚀 Setting up Stellar Conferencing database..."
+echo "🚀 Setting up NexusMeet database..."
 
 # Install dependencies if needed
 if ! command -v pnpm &> /dev/null; then

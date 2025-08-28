@@ -4,10 +4,11 @@
 set -e
 
 # Configuration
-APP_NAME="stellar-conferencing"
+APP_NAME="nexusmeet"
 APP_DIR="/var/www/$APP_NAME"
+SERVICE_FILE="nexusmeet-server.service"
 SERVER_DIR="$APP_DIR/server"
-GIT_REPO="https://your-git-repo.com/your-username/$APP_NAME.git"
+GIT_REPO="https://github.com/your-username/nexusmeet.git"
 BRANCH="main"
 NODE_ENV="production"
 

@@ -1,7 +1,7 @@
 export const config = {
   serverUrl: import.meta.env.VITE_API_URL || 'http://localhost:3000/api',
   livekitUrl: import.meta.env.VITE_LIVEKIT_URL || 'ws://localhost:7880',
-  appName: 'Stellar Conferencing',
+  appName: 'NexusMeet',
   version: '1.0.0',
   features: {
     recording: true,

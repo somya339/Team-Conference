@@ -1,25 +1,27 @@
 [Unit]
-Description=Stellar Conferencing Server
+Description=NexusMeet Server
 After=network.target
 
 [Service]
 Type=simple
-User=node
-WorkingDirectory=/var/www/stellar-conferencing/server
-Environment=NODE_ENV=production
-ExecStart=/usr/bin/npm start
+User=nexusmeet
+WorkingDirectory=/var/www/nexusmeet/apps/server
+Environment="NODE_ENV=production"
+ExecStart=/usr/bin/pnpm start
 Restart=always
 RestartSec=10
+KillSignal=SIGINT
 StandardOutput=syslog
 StandardError=syslog
-SyslogIdentifier=stellar-server
+SyslogIdentifier=nexusmeet-server
+Environment=NODE_ENV=production PORT=3000
 
 # Security options
 NoNewPrivileges=true
 ProtectSystem=full
 PrivateTmp=true
 ProtectHome=true
-ReadWritePaths=/var/www/stellar-conferencing/server/logs
+ReadWritePaths=/var/www/nexusmeet/server/logs
 
 [Install]
 WantedBy=multi-user.target

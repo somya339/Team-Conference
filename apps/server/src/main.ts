@@ -39,10 +39,10 @@ async function bootstrap() {
   // Global prefix
   app.setGlobalPrefix('api');
 
-  // Swagger documentation
+  // Swagger/OpenAPI documentation
   const config = new DocumentBuilder()
-    .setTitle('Stellar Conferencing API')
-    .setDescription('A high-performance video conferencing API built with NestJS and LiveKit')
+    .setTitle('NexusMeet API')
+    .setDescription('The NexusMeet API documentation')
     .setVersion('1.0.0')
     .addBearerAuth(
       {
@@ -68,7 +68,7 @@ async function bootstrap() {
       filter: true,
       showRequestDuration: true,
     },
-    customSiteTitle: 'Stellar API Documentation',
+    customSiteTitle: 'NexusMeet API Documentation',
   });
 
   // Graceful shutdown
@@ -103,7 +103,7 @@ async function bootstrap() {
   await app.listen(port);
 
   console.log(`
-🚀 Stellar Conferencing API is running!
+🚀 NexusMeet API is running!
 📍 Local: http://localhost:${port}
 📚 API Documentation: http://localhost:${port}/api
 🔧 Environment: ${configService.get('NODE_ENV') || 'development'}
