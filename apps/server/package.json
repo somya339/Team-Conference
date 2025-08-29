@@ -18,7 +18,7 @@
     "start": "pm2-runtime start ecosystem.config.js --env production",
     "build": "npx prisma generate && nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "dev": "nest start --debug 0.0.0.0:3000:3001 --watch",
+    "dev": "nest start --debug --watch",
     "start:debug": "nest start --debug --watch",
     "db:generate": "prisma generate",
     "db:push": "prisma db push --accept-data-loss",

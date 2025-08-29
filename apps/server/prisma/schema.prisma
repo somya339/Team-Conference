@@ -14,9 +14,9 @@ model User {
   name         String
   email        String               @unique
   password     String
-  lastLoginAt  DateTime?
-  createdAt    DateTime             @default(now())
-  updatedAt    DateTime             @updatedAt
+  lastLoginAt  DateTime? @db.Timestamptz
+  createdAt    DateTime             @default(now()) @db.Timestamptz
+  updatedAt    DateTime             @updatedAt @db.Timestamptz
   submissions  Submission[]         @relation("UserSubmissions")
   participants MeetingParticipant[] @relation("User")
   meetings     Meeting[]            @relation("MeetingCreator")
@@ -28,10 +28,10 @@ model Meeting {
   code           String               @unique
   createdBy      String
   creator        User                 @relation("MeetingCreator", fields: [createdBy], references: [id])
-  createdAt      DateTime             @default(now())
-  updatedAt      DateTime             @updatedAt
-  startTime      DateTime?
-  endTime        DateTime?
+  createdAt      DateTime             @default(now()) @db.Timestamptz
+  updatedAt      DateTime             @updatedAt @db.Timestamptz
+  startTime      DateTime?            @db.Timestamptz
+  endTime        DateTime?            @db.Timestamptz
   maxParticipants Int                 @default(50)
   status         String               @default("scheduled")
   description    String?
@@ -47,8 +47,8 @@ model MeetingParticipant {
   meeting        Meeting  @relation(fields: [meetingId], references: [id], name: "MeetingParticipants")
   userId         String
   user           User     @relation(fields: [userId], references: [id], name: "User")
-  joinTime       DateTime @default(now())
-  leaveTime      DateTime?
+  joinTime       DateTime @default(now()) @db.Timestamptz
+  leaveTime      DateTime?           @db.Timestamptz
   isActive       Boolean  @default(true)
 
   @@unique([userId, meetingId])
@@ -64,8 +64,8 @@ model Submission {
   fileName    String
   fileType    String
   fileSize    Int
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now()) @db.Timestamptz
+  updatedAt   DateTime @updatedAt @db.Timestamptz
 
   @@unique([userId, meetingId])
 }
