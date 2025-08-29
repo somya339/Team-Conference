@@ -23,6 +23,7 @@
   "author": "Your Name <your.email@example.com>",
   "license": "MIT",
   "homepage": "https://nexusmeet.app",
+  "packageManager": "pnpm@8.14.0",
   "engines": {
     "node": "18.19.0",
     "pnpm": ">=8.0.0"
