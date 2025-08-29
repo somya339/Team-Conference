@@ -23,14 +23,14 @@
   "author": "Your Name <your.email@example.com>",
   "license": "MIT",
   "homepage": "https://nexusmeet.app",
+  "engines": {
+    "node": "18.19.0",
+    "pnpm": ">=8.0.0"
+  },
   "devDependencies": {
     "prettier": "^3.5.0",
     "turbo": "^2.4.2",
     "typescript": "5.7.3"
-  },
-  "engines": {
-    "node": ">=18.0.0",
-    "pnpm": ">=8.0.0"
   },
   "workspaces": [
     "apps/*",
