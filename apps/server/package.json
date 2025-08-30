@@ -108,5 +108,8 @@
   "compilerOptions": {
     "outDir": "./dist",
     "baseUrl": "./"
+  },
+  "prisma": {
+    "schema": "./prisma/schema.prisma"
   }
 }
