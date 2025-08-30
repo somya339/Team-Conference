@@ -52,7 +52,9 @@ export interface CloudinaryConfig {
   apiSecret: string;
 }
 
-export default registerAs('app', () => ({
+export default registerAs('app', () => {
+  console.log(process.env);
+  return ({
   database: {
     url: process.env.DATABASE_URL,
   } as DatabaseConfig,
@@ -112,4 +114,4 @@ export default registerAs('app', () => ({
     apiKey: process.env.CLOUDINARY_API_KEY || 'your-api-key',
     apiSecret: process.env.CLOUDINARY_API_SECRET || 'your-api-secret',
   } as CloudinaryConfig,
-}));
+})});

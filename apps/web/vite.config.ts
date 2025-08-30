@@ -67,12 +67,16 @@ export default defineConfig(({ mode }) => ({
       'class-variance-authority',
       'motion/react',
     ],
+    esbuildOptions: {
+      target: 'es2020'
+    }
   },
 
   // Environment variables
   define: {
     __APP_VERSION__: JSON.stringify(process.env.npm_package_version),
     __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
+    'process.env': {}
   },
 
   // CSS configuration
@@ -86,17 +90,4 @@ export default defineConfig(({ mode }) => ({
       '@': '/src',
     },
   },
-  
-  // Environment variables
-  define: {
-    'process.env': {}
-  },
-  
-  // Optimize deps for production
-  optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom'],
-    esbuildOptions: {
-      target: 'es2020'
-    }
-  }
 }));

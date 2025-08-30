@@ -27,13 +27,12 @@ export const Dashboard: React.FC = () => {
 
   // Authentication redirects are handled by ProtectedRoute in App.tsx
 
+  // Filter upcoming meetings (all future meetings)
   const upcomingMeetings = meetings?.filter((meeting) => {
-    // If meeting has a startTime, use it to determine if it's upcoming
-    if (meeting.startTime) {
-      return new Date(meeting.startTime) > new Date();
-    }
-    // If no startTime, consider it upcoming (newly created meetings without schedule)
-    return true;
+    if (!meeting.startTime) return false;
+    const meetingTime = new Date(meeting.startTime).getTime();
+    const now = new Date().getTime();
+    return meetingTime > now;
   });
   const pastMeetings = meetings?.filter((meeting) => {
     // Only show in past if it has a startTime and it's in the past
