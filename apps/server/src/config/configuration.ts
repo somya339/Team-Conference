@@ -62,7 +62,7 @@ export default registerAs('app', () => {
   });
   
   // Return configuration object
-  return {
+  return ({
     database: {
       url: process.env.DATABASE_URL,
     } as DatabaseConfig,
