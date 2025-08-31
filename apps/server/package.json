@@ -17,7 +17,7 @@
     "prestart": "mkdir -p logs",
     "start": "pm2-runtime start ecosystem.config.js --env production",
     "build": "npx prisma generate && nest build",
-    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "format": "npm i -g pm2 && prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "dev": "nest start --debug --watch",
     "start:debug": "nest start --debug --watch",
     "db:generate": "prisma generate",
