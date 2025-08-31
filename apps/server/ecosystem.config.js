@@ -2,7 +2,7 @@ module.exports = {
   apps: [
     {
       name: 'nexusmeet-server',
-      script: 'dist/main.js',
+      script: 'dist/src/main.js',
       instances: 'max',
       autorestart: true,
       watch: false,
