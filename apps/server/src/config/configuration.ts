@@ -52,12 +52,20 @@ export interface CloudinaryConfig {
   apiSecret: string;
 }
 
+// Configuration factory function
 export default registerAs('app', () => {
-  console.log(process.env);
-  return ({
-  database: {
-    url: process.env.DATABASE_URL,
-  } as DatabaseConfig,
+  // Log environment variables (safely)
+  console.log('Loading configuration...');
+  console.log('Environment Variables:', {
+    DATABASE_URL: process.env.DATABASE_URL ? '***' : 'Not set',
+    NODE_ENV: process.env.NODE_ENV || 'development'
+  });
+  
+  // Return configuration object
+  return {
+    database: {
+      url: process.env.DATABASE_URL,
+    } as DatabaseConfig,
 
   jwt: {
     secret: process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production',
