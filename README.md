@@ -21,12 +21,12 @@ NexusMeet is a modern, open-source video conferencing application built with Rea
 - **Prisma**
 
 ## Live Demo
-- **Live Site**: [nexusmeet.vercel.app](https://nexusmeet.vercel.app/)
+- **Live Site**: [nexus-meet.vercel.app](https://nexus-meet.vercel.app/signin)
 - **Storybook**: [Chromatic Deployment](https://67b58226c871a884bc89a90b-oyibqdsbtl.chromatic.com)
 - **Swagger API Docs**: [nexusmeet.onrender.com/api](https://nexusmeet.onrender.com/api)
 
 ## Repository
-- **GitHub**: [your-username/nexusmeet](https://github.com/your-username/nexusmeet)
+- **GitHub**: [somya339/Team-Conference](https://github.com/somya339/Team-Conference)
 
 ---
 
@@ -42,8 +42,8 @@ Ensure you have the following installed:
 
 Clone the repository:
 ```sh
-git clone https://github.com/your-username/nexusmeet.git
-cd nexusmeet
+git clone https://github.com/somya339/Team-Conference.git
+cd Team-Conference
 ```
 
 Install dependencies:
